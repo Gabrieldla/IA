@@ -973,4 +973,6 @@ async def post(request):
 
 # Iniciar servidor
 if __name__ == "__main__":
-    serve()
+    import os
+    port = int(os.environ.get("PORT", 5001))
+    serve(host="0.0.0.0", port=port)
