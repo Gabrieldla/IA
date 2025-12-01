@@ -414,3 +414,131 @@ def create_top_nulls_chart(df):
     plt.tight_layout()
     
     return plot_to_base64(fig)
+
+
+def create_stats_boxplot(df):
+    """Crea boxplots de las variables numéricas más importantes"""
+    # Seleccionar variables numéricas principales
+    important_vars = ['SalePrice', 'GrLivArea', 'TotalBsmtSF', 'OverallQual', 'GarageCars', 'FullBath', 'YearBuilt']
+    available_vars = [v for v in important_vars if v in df.columns]
+    
+    if not available_vars:
+        return None
+    
+    # Crear subplots
+    n_vars = len(available_vars)
+    n_cols = 3
+    n_rows = (n_vars + n_cols - 1) // n_cols
+    
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, n_rows * 4))
+    axes = axes.flatten() if n_vars > 1 else [axes]
+    
+    for i, var in enumerate(available_vars):
+        sns.boxplot(y=df[var], ax=axes[i], color='#60a5fa')
+        axes[i].set_title(f'{var}', fontsize=12, fontweight='bold')
+        axes[i].set_ylabel('Valor', fontsize=10)
+        axes[i].grid(axis='y', alpha=0.3)
+    
+    # Ocultar ejes sobrantes
+    for i in range(n_vars, len(axes)):
+        axes[i].axis('off')
+    
+    plt.tight_layout()
+    return plot_to_base64(fig)
+
+
+def create_saleprice_boxplot(df):
+    """Crea boxplot de SalePrice"""
+    if 'SalePrice' not in df.columns:
+        return None
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.boxplot(y=df['SalePrice'], ax=ax, color='#60a5fa')
+    ax.set_title('Boxplot de SalePrice', fontsize=14, fontweight='bold')
+    ax.set_ylabel('Precio ($)', fontsize=12, fontweight='bold')
+    ax.grid(axis='y', alpha=0.3)
+    
+    plt.tight_layout()
+    return plot_to_base64(fig)
+
+
+def create_saleprice_quartiles_chart(df):
+    """Crea gráfico de distribución por cuartiles de SalePrice"""
+    if 'SalePrice' not in df.columns:
+        return None
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    quartiles = ['Q1\n(0-25%)', 'Q2\n(25-50%)', 'Q3\n(50-75%)', 'Q4\n(75-100%)']
+    q1 = df['SalePrice'].quantile(0.25)
+    q2 = df['SalePrice'].quantile(0.50)
+    q3 = df['SalePrice'].quantile(0.75)
+    
+    counts = [
+        len(df[df['SalePrice'] <= q1]),
+        len(df[(df['SalePrice'] > q1) & (df['SalePrice'] <= q2)]),
+        len(df[(df['SalePrice'] > q2) & (df['SalePrice'] <= q3)]),
+        len(df[df['SalePrice'] > q3])
+    ]
+    
+    colors_q = ['#ef4444', '#f59e0b', '#4ade80', '#60a5fa']
+    bars = ax.bar(quartiles, counts, color=colors_q, alpha=0.8, edgecolor='black', linewidth=1.5)
+    ax.set_title('Distribución por Cuartiles de SalePrice', fontsize=14, fontweight='bold')
+    ax.set_ylabel('Cantidad de Casas', fontsize=12, fontweight='bold')
+    ax.grid(axis='y', alpha=0.3)
+    
+    # Agregar valores encima de las barras
+    for bar, count in zip(bars, counts):
+        height = bar.get_height()
+        ax.text(bar.get_x() + bar.get_width()/2., height + 5,
+               f'{count}', ha='center', va='bottom', fontsize=11, fontweight='bold')
+    
+    plt.tight_layout()
+    return plot_to_base64(fig)
+
+
+def create_numeric_variables_overview(df):
+    """Crea un overview visual de todas las variables numéricas principales"""
+    numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    
+    # Filtrar columnas principales (excluir IDs y variables poco relevantes)
+    exclude_cols = ['Id', 'MSSubClass', 'MoSold', 'YrSold']
+    numeric_cols = [col for col in numeric_cols if col not in exclude_cols]
+    
+    if not numeric_cols:
+        return None
+    
+    # Tomar las 12 más importantes
+    important_cols = ['SalePrice', 'OverallQual', 'GrLivArea', 'GarageCars', 'GarageArea', 
+                     'TotalBsmtSF', '1stFlrSF', 'FullBath', 'YearBuilt', 'YearRemodAdd', 
+                     'TotRmsAbvGrd', '2ndFlrSF']
+    available_cols = [col for col in important_cols if col in df.columns]
+    
+    if not available_cols:
+        available_cols = numeric_cols[:12]
+    
+    n_cols = 4
+    n_rows = (len(available_cols) + n_cols - 1) // n_cols
+    
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(20, n_rows * 3))
+    axes = axes.flatten() if len(available_cols) > 1 else [axes]
+    
+    for i, col in enumerate(available_cols):
+        sns.histplot(df[col], bins=30, kde=True, ax=axes[i], color='#60a5fa', edgecolor='black')
+        axes[i].set_title(f'{col}', fontsize=11, fontweight='bold')
+        axes[i].set_xlabel('')
+        axes[i].set_ylabel('Frecuencia', fontsize=9)
+        axes[i].grid(alpha=0.3)
+        
+        # Agregar estadísticas básicas
+        mean_val = df[col].mean()
+        median_val = df[col].median()
+        axes[i].axvline(mean_val, color='red', linestyle='--', linewidth=1.5, alpha=0.7)
+        axes[i].axvline(median_val, color='orange', linestyle='--', linewidth=1.5, alpha=0.7)
+    
+    # Ocultar ejes sobrantes
+    for i in range(len(available_cols), len(axes)):
+        axes[i].axis('off')
+    
+    plt.tight_layout()
+    return plot_to_base64(fig)

@@ -19,8 +19,8 @@ class ModelTrainer:
         self.training_log = []
         self.training_output = []  # Nuevo: outputs detallados
         
-    def train_model(self, X, y, optimize=True):
-        """Entrena el modelo con o sin optimización"""
+    def train_model(self, X, y):
+        """Entrena el modelo con optimización"""
         self._log("Dividiendo datos en entrenamiento y prueba (80-20)")
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
@@ -32,28 +32,13 @@ class ModelTrainer:
             'output': f'Train: {len(X_train)} muestras | Test: {len(X_test)} muestras (80/20 split)'
         })
         
-        if optimize:
-            self._log("Iniciando optimización de hiperparámetros...")
-            self.training_output.append({
-                'step': 'optimization_start',
-                'name': 'Búsqueda de hiperparámetros',
-                'output': 'RandomizedSearchCV iniciado con 20 combinaciones y 5-fold cross-validation'
-            })
-            self.model = self._optimize_hyperparameters(X_train, y_train)
-        else:
-            self._log("Entrenando modelo con parámetros por defecto...")
-            self.model = xgb.XGBRegressor(
-                n_estimators=1000,
-                learning_rate=0.05,
-                max_depth=5,
-                random_state=42
-            )
-            self.model.fit(X_train, y_train)
-            self.training_output.append({
-                'step': 'training',
-                'name': 'Entrenamiento',
-                'output': 'Modelo entrenado con parámetros por defecto'
-            })
+        self._log("Iniciando optimización de hiperparámetros...")
+        self.training_output.append({
+            'step': 'optimization_start',
+            'name': 'Búsqueda de hiperparámetros',
+            'output': 'RandomizedSearchCV iniciado con 20 combinaciones y 5-fold cross-validation'
+        })
+        self.model = self._optimize_hyperparameters(X_train, y_train)
         
         # Evaluar modelo
         self._log("Evaluando modelo en conjunto de prueba...")
@@ -64,7 +49,7 @@ class ModelTrainer:
     
     def _optimize_hyperparameters(self, X_train, y_train):
         """Optimiza hiperparámetros usando RandomizedSearchCV"""
-        param_dist = {
+        dist_parametros = {
             'n_estimators': [500, 1000, 1500],
             'learning_rate': [0.01, 0.05, 0.1],
             'max_depth': [3, 5, 7],
@@ -76,40 +61,47 @@ class ModelTrainer:
             'reg_lambda': [0.5, 1, 2]
         }
         
-        xgb_model = xgb.XGBRegressor(random_state=42, eval_metric='rmse')
+        modelo_xgb = xgb.XGBRegressor(random_state=42, eval_metric='rmse')
         
-        random_search = RandomizedSearchCV(
-            estimator=xgb_model,
-            param_distributions=param_dist,
+        busqueda_aleatoria = RandomizedSearchCV(
+            estimator=modelo_xgb,
+            param_distributions=dist_parametros,
             n_iter=20,
             cv=5,
             scoring='neg_root_mean_squared_error',
             n_jobs=-1,
             random_state=42,
-            verbose=0
+            verbose=1
         )
         
         self._log("Probando 20 combinaciones de hiperparámetros con validación cruzada...")
-        random_search.fit(X_train, y_train)
+        busqueda_aleatoria.fit(X_train, y_train)
         
-        self.best_params = random_search.best_params_
-        self._log(f"Mejores parámetros encontrados: {self.best_params}")
+        modelo = busqueda_aleatoria.best_estimator_
+        mejores_params = busqueda_aleatoria.best_params_
+        
+        self.best_params = mejores_params
+        self._log("OPTIMIZACIÓN COMPLETADA")
+        self._log("\nMejores hiperparámetros:")
+        for param, valor in mejores_params.items():
+            self._log(f"  • {param}: {valor}")
+        self._log(f"\nMejor RMSE en CV: {-busqueda_aleatoria.best_score_:.4f}")
         
         # Guardar output de optimización
-        params_str = "\n".join([f"  • {k}: {v}" for k, v in self.best_params.items()])
+        params_str = "\n".join([f"  • {param}: {valor}" for param, valor in mejores_params.items()])
         self.training_output.append({
             'step': 'optimization_result',
             'name': 'Mejores hiperparámetros',
-            'output': f'Optimización completada. Parámetros seleccionados:\n{params_str}'
+            'output': f'OPTIMIZACIÓN COMPLETADA\n\nMejores hiperparámetros:\n{params_str}'
         })
         
         self.training_output.append({
             'step': 'best_score',
             'name': 'Score de validación cruzada',
-            'output': f'Mejor RMSE en CV: {-random_search.best_score_:.4f}'
+            'output': f'Mejor RMSE en CV: {-busqueda_aleatoria.best_score_:.4f}'
         })
         
-        return random_search.best_estimator_
+        return modelo
     
     def _evaluate_model(self, X_test, y_test):
         """Evalúa el modelo y calcula métricas"""

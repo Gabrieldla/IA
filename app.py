@@ -483,18 +483,39 @@ def generate_features_tab(state, has_data, active_tab='upload'):
     # Obtener describe de columnas numéricas
     df_describe = df.describe()
     
+    # Generar gráficos estadísticos de SalePrice
+    from plot_utils import create_saleprice_boxplot, create_saleprice_quartiles_chart
+    
+    boxplot_chart = create_saleprice_boxplot(df)
+    quartiles_chart = create_saleprice_quartiles_chart(df)
+    
     return Div(
         H2("Características Estadísticas", cls="section-title"),
         P("Resumen estadístico de las variables numéricas del dataset", cls="section-subtitle"),
         
+        # Tabla de estadísticas descriptivas
         Div(
-            H3("Estadísticas Descriptivas (.describe()):", style="color: #4ade80; margin-bottom: 1rem;"),
+            H3("Estadísticas Descriptivas (.describe())", style="color: #4ade80; margin-bottom: 1rem;"),
             Div(
                 NotStr(df_describe.to_html(classes="table", border=0)),
                 style="overflow-x: auto; max-height: 600px; overflow-y: auto;"
             ),
             cls="step-box"
         ),
+        
+        # Boxplot de SalePrice
+        Div(
+            H3("Boxplot de SalePrice", style="color: #4ade80; margin-bottom: 1rem;"),
+            Img(src=boxplot_chart, style="width: 100%; max-width: 800px; margin: 1rem auto; display: block;") if boxplot_chart else P("No hay datos de SalePrice"),
+            cls="step-box"
+        ) if boxplot_chart else None,
+        
+        # Distribución por Cuartiles
+        Div(
+            H3("Distribución por Cuartiles de SalePrice", style="color: #4ade80; margin-bottom: 1rem;"),
+            Img(src=quartiles_chart, style="width: 100%; max-width: 800px; margin: 1rem auto; display: block;") if quartiles_chart else P("No hay datos de SalePrice"),
+            cls="step-box"
+        ) if quartiles_chart else None,
         
         id="features",
         cls=f"section tab-pane{' active' if active_tab == 'features' else ''}"
@@ -881,7 +902,7 @@ async def post():
         
         # Entrenar modelo
         trainer = ModelTrainer()
-        model, metrics, X_test, y_test, y_pred = trainer.train_model(X, y, optimize=True)
+        model, metrics, X_test, y_test, y_pred = trainer.train_model(X, y)
         
         # Guardar modelo
         trainer.save_model(str(MODELS_DIR), features, processor.label_encoders)
