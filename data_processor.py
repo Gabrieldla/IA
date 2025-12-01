@@ -47,116 +47,117 @@ class HousePriceDataProcessor:
         
     def process_data(self, df):
         """Procesa el dataset completo - SOLO LO ESENCIAL"""
-        df_ready = df.copy()
-        initial_rows = len(df_ready)
-        initial_nulls = df_ready.isnull().sum().sum()
+        df_listo = df.copy()
+        filas_iniciales = len(df_listo)
+        nulos_iniciales = df_listo.isnull().sum().sum()
         
         # Paso 1: Rellenar TODOS los nulos primero (antes de filtrar columnas)
-        nulls_numeric = 0
-        nulls_categorical = 0
+        nulos_numericos = 0
+        nulos_categoricos = 0
         
-        for col in df_ready.columns:
-            if df_ready[col].isnull().any():
-                if df_ready[col].dtype in ['int64', 'float64']:
+        for col in df_listo.columns:
+            if df_listo[col].isnull().any():
+                if df_listo[col].dtype in ['int64', 'float64']:
                     # Numéricos: rellenar con 0
-                    nulls_numeric += df_ready[col].isnull().sum()
-                    df_ready[col] = df_ready[col].fillna(0)
+                    nulos_numericos += df_listo[col].isnull().sum()
+                    df_listo[col] = df_listo[col].fillna(0)
                 else:
                     # Categóricos: rellenar con 'None'
-                    nulls_categorical += df_ready[col].isnull().sum()
-                    df_ready[col] = df_ready[col].fillna('None')
+                    nulos_categoricos += df_listo[col].isnull().sum()
+                    df_listo[col] = df_listo[col].fillna('None')
         
-        total_nulls_filled = nulls_numeric + nulls_categorical
+        total_nulos_rellenados = nulos_numericos + nulos_categoricos
         
         # Guardar datos para gráfico de nulos rellenados
         self.step_charts_data['step1_nulls'] = {
-            'nulls_numeric': nulls_numeric,
-            'nulls_categorical': nulls_categorical
+            'nulos_numericos': nulos_numericos,
+            'nulos_categoricos': nulos_categoricos
         }
         
         self.steps_output.append({
             'step': 1,
-            'name': 'Rellenar valores faltantes',
-            'output': f'''{total_nulls_filled} valores nulos rellenados:
-  • Numéricos: {nulls_numeric} → 0
-  • Categóricos: {nulls_categorical} → 'None'
+            'name': 'PASO 1: Rellenar valores faltantes',
+            'output': f'''{total_nulos_rellenados} valores nulos rellenados:
+  • Numéricos: {nulos_numericos} → 0
+  • Categóricos: {nulos_categoricos} → 'None'
 Dataset limpio: 0 valores nulos restantes ✓'''
         })
         
         # Calcular correlaciones ANTES de filtrar (para mostrar en gráfico)
-        numeric_df = df_ready.select_dtypes(include=[np.number])
-        if 'SalePrice' in numeric_df.columns:
-            correlations = numeric_df.corr()['SalePrice'].sort_values(ascending=False)
+        df_numerico = df_listo.select_dtypes(include=[np.number])
+        if 'SalePrice' in df_numerico.columns:
+            correlaciones = df_numerico.corr()['SalePrice'].sort_values(ascending=False)
             # Guardar para gráfico
-            self.step_charts_data['step2_correlation'] = correlations.drop('SalePrice').head(15)
+            self.step_charts_data['step2_correlation'] = correlaciones.drop('SalePrice').head(15)
         
         # Ahora filtrar solo las columnas que vamos a usar
-        features_a_usar = ['OverallQual', 'GrLivArea', 'GarageCars', 'GarageArea', 
-                          'TotalBsmtSF', '1stFlrSF', 'FullBath', 'YearBuilt', 
-                          'YearRemodAdd', 'TotRmsAbvGrd', 'SalePrice']
+        top_10_caracteristicas = ['OverallQual', 'GrLivArea', 'GarageCars', 'GarageArea', 
+                                  'TotalBsmtSF', '1stFlrSF', 'FullBath', 'YearBuilt', 
+                                  'YearRemodAdd', 'TotRmsAbvGrd']
         
         # Mantener solo las columnas necesarias
-        columnas_existentes = [col for col in features_a_usar if col in df_ready.columns]
-        df_ready = df_ready[columnas_existentes]
+        columnas_existentes = [col for col in top_10_caracteristicas if col in df_listo.columns]
+        df_listo = df_listo[columnas_existentes + ['SalePrice']]
         
         self.steps_output.append({
             'step': 2,
-            'name': 'Selección de características',
-            'output': f'Dataset reducido de {len(df.columns)} a {len(columnas_existentes)} columnas (TOP 10 + SalePrice)\n\nCaracterísticas seleccionadas: {", ".join(features_a_usar[:-1])}'
+            'name': 'PASO 2: Selección de características',
+            'output': f'Dataset reducido de {len(df.columns)} a {len(df_listo.columns)} columnas (TOP 10 + SalePrice)\n\nCaracterísticas seleccionadas: {", ".join(top_10_caracteristicas)}'
         })
         
         # Paso 4: Remover outliers extremos
-        rows_before = len(df_ready)
-        if 'GrLivArea' in df_ready.columns and 'SalePrice' in df_ready.columns:
+        filas_antes = len(df_listo)
+        if 'GrLivArea' in df_listo.columns and 'SalePrice' in df_listo.columns:
             # Guardar datos ANTES para gráfico
-            grliv_before = df_ready['GrLivArea'].copy()
-            price_before = df_ready['SalePrice'].copy()
+            area_antes = df_listo['GrLivArea'].copy()
+            precio_antes = df_listo['SalePrice'].copy()
             
-            threshold = df_ready['GrLivArea'].quantile(0.995)
-            df_ready = df_ready[df_ready['GrLivArea'] <= threshold]
+            umbral = df_listo['GrLivArea'].quantile(0.995)
+            df_listo = df_listo[df_listo['GrLivArea'] <= umbral]
+            df_listo = df_listo.reset_index(drop=True)
             
             # Guardar datos DESPUÉS para gráfico
-            grliv_after = df_ready['GrLivArea'].copy()
-            price_after = df_ready['SalePrice'].copy()
+            area_despues = df_listo['GrLivArea'].copy()
+            precio_despues = df_listo['SalePrice'].copy()
             
             self.step_charts_data['step4_outliers'] = {
-                'grliv_before': grliv_before,
-                'price_before': price_before,
-                'grliv_after': grliv_after,
-                'price_after': price_after,
-                'threshold': threshold
+                'area_antes': area_antes,
+                'precio_antes': precio_antes,
+                'area_despues': area_despues,
+                'precio_despues': precio_despues,
+                'umbral': umbral
             }
         else:
-            threshold = 0
+            umbral = 0
         
-        outliers_removed = rows_before - len(df_ready)
+        outliers_eliminados = filas_antes - len(df_listo)
         
         self.steps_output.append({
             'step': 4,
-            'name': 'Eliminar outliers',
-            'output': f'{outliers_removed} outliers extremos eliminados (áreas >99.5 percentil = {threshold:.0f} pies²)'
+            'name': 'PASO 4: Remover outliers extremos',
+            'output': f'{outliers_eliminados} outliers eliminados (áreas >{umbral:.0f} pies²)'
         })
         
         # Paso 5: Transformar variable objetivo
-        if "SalePrice" in df_ready.columns:
+        if "SalePrice" in df_listo.columns:
             # Guardar datos ANTES para gráfico
-            price_original = df_ready["SalePrice"].copy()
+            precio_original = df_listo["SalePrice"].copy()
             
-            df_ready["SalePrice_log"] = np.log1p(df_ready["SalePrice"])
+            df_listo["SalePrice_log"] = np.log1p(df_listo["SalePrice"])
             
             # Guardar datos para gráfico
             self.step_charts_data['step5_log'] = {
-                'price_original': price_original,
-                'price_log': df_ready["SalePrice_log"].copy()
+                'precio_original': precio_original,
+                'precio_log': df_listo["SalePrice_log"].copy()
             }
             
             self.steps_output.append({
                 'step': 5,
-                'name': 'Transformación logarítmica',
-                'output': f'SalePrice transformado a escala logarítmica para normalidad\n(rango: {df_ready["SalePrice_log"].min():.2f} - {df_ready["SalePrice_log"].max():.2f})'
+                'name': 'PASO 5: Transformación logarítmica',
+                'output': f'SalePrice transformado a escala logarítmica\n  Rango original: ${precio_original.min():,.0f} - ${precio_original.max():,.0f}\n  Rango log: {df_listo["SalePrice_log"].min():.2f} - {df_listo["SalePrice_log"].max():.2f}'
             })
         
-        return df_ready
+        return df_listo
     
     def encode_categorical(self, df):
         """Codifica variables categóricas - NO NECESARIO, solo usamos numéricas"""
@@ -165,7 +166,7 @@ Dataset limpio: 0 valores nulos restantes ✓'''
     def prepare_features(self, df_model):
         """Prepara las características para el modelo - Solo las más importantes"""
         # TOP 10 características más correlacionadas con el precio
-        features_seleccionadas = [
+        top_10_caracteristicas = [
             'OverallQual',    # Calidad general (correlación ~0.79)
             'GrLivArea',      # Área habitable (correlación ~0.71)
             'GarageCars',     # Capacidad garaje (correlación ~0.64)
@@ -178,13 +179,13 @@ Dataset limpio: 0 valores nulos restantes ✓'''
             'TotRmsAbvGrd',   # Total habitaciones (correlación ~0.53)
         ]
         
-        features_disponibles = [f for f in features_seleccionadas if f in df_model.columns]
-        self._log_step(f"Seleccionadas {len(features_disponibles)} características TOP (máxima correlación con precio)")
+        caracteristicas_disponibles = [f for f in top_10_caracteristicas if f in df_model.columns]
+        self._log_step(f"Seleccionadas {len(caracteristicas_disponibles)} características TOP (máxima correlación con precio)")
         
-        X = df_model[features_disponibles]
+        X = df_model[caracteristicas_disponibles]
         y = df_model["SalePrice_log"] if "SalePrice_log" in df_model.columns else None
         
-        return X, y, features_disponibles
+        return X, y, caracteristicas_disponibles
     
     def _log_step(self, message):
         """Registra un paso del procesamiento"""

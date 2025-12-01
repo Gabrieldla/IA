@@ -2,8 +2,22 @@ services:
   - type: web
     name: house-price-predictor
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    # Install and pre-warm matplotlib font cache during build to avoid long startup delays
+    buildCommand: |
+      pip install -r requirements.txt;
+      python - <<'PY'
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+plt.figure()
+plt.savefig('fontcache_prebuild.png')
+PY
+
+    # Start command ensures MPLCONFIGDIR is writable and uses the PORT provided by the platform
+    startCommand: bash -lc "mkdir -p /tmp/.cache/matplotlib && export MPLCONFIGDIR=/tmp/.cache/matplotlib && python app.py"
+
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: MPLCONFIGDIR
+        value: /tmp/.cache/matplotlib
