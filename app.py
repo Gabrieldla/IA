@@ -34,206 +34,285 @@ app_state = {
 CSS = """
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { 
-    font-family: 'Inter', -apple-system, sans-serif; 
-    background: #0a0a0a; 
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
+    background-attachment: fixed;
     color: #e2e8f0; 
-    line-height: 1.6; 
+    line-height: 1.6;
+    min-height: 100vh;
 }
-.container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+.container { 
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
 .header { 
     background: linear-gradient(135deg, #006239 0%, #004d2d 100%);
-    padding: 2.5rem; 
+    padding: 3rem 2rem; 
     text-align: center; 
-    border-radius: 12px; 
-    margin-bottom: 2rem;
-    box-shadow: 0 8px 32px rgba(0, 98, 57, 0.3);
+    margin: 0;
+    box-shadow: 0 8px 32px rgba(0, 98, 57, 0.4);
+    border-bottom: 3px solid #4ade80;
 }
 .header h1 { 
-    font-size: 2.5rem; 
+    font-size: 3rem; 
     color: #ffffff; 
     font-weight: 800; 
     margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
-.header p { color: #4ade80; font-size: 1.1rem; font-weight: 500; }
+.header p { 
+    color: #4ade80; 
+    font-size: 1.2rem; 
+    font-weight: 500;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
 
 .section { 
-    background: #171717; 
-    border: 1px solid #292929; 
-    border-radius: 8px; 
-    padding: 2.5rem; 
-    margin-bottom: 2rem; 
+    background: rgba(23, 23, 23, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(74, 222, 128, 0.2); 
+    padding: 3rem 2rem; 
+    margin: 0;
+    min-height: calc(100vh - 220px);
 }
 .section-title { 
-    font-size: 1.75rem; 
+    font-size: 2.25rem; 
     color: #ffffff; 
-    margin-bottom: 0.5rem; 
-    font-weight: 700; 
+    margin-bottom: 0.75rem; 
+    font-weight: 700;
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
-.section-subtitle { color: #898989; margin-bottom: 2rem; }
+.section-subtitle { 
+    color: #9ca3af; 
+    margin-bottom: 2.5rem;
+    font-size: 1.1rem;
+}
 
 .form-group { margin-bottom: 1.5rem; }
 label { 
     display: block; 
     font-weight: 600; 
     color: #e2e8f0; 
-    margin-bottom: 0.5rem; 
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
 }
 input[type="file"], input[type="number"] {
     width: 100%;
     padding: 1rem;
-    border: 2px solid #292929;
-    background: #0f0f0f;
+    border: 2px solid rgba(74, 222, 128, 0.3);
+    background: rgba(15, 15, 15, 0.8);
     color: #e2e8f0;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 1rem;
+    transition: all 0.3s ease;
 }
 input:focus {
     outline: none;
     border-color: #4ade80;
-    background: #1a1a1a;
+    background: rgba(26, 26, 26, 0.9);
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
 }
 
 .btn {
     background: linear-gradient(135deg, #006239 0%, #004d2d 100%);
     color: #ffffff;
     border: none;
-    padding: 0.875rem 2rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    border-radius: 6px;
+    padding: 1rem 2.5rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-radius: 8px;
     cursor: pointer;
     width: 100%;
-    max-width: 300px;
+    max-width: 350px;
     text-transform: uppercase;
-    transition: all 0.3s;
+    transition: all 0.3s ease;
     display: block;
     margin: 0 auto;
+    box-shadow: 0 4px 15px rgba(0, 98, 57, 0.3);
+    letter-spacing: 0.5px;
 }
 .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(74, 222, 128, 0.5);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(74, 222, 128, 0.5);
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+    color: #0a0a0a;
 }
 .btn-block {
     max-width: 100%;
 }
 
 .step-box {
-    background: #1a1a1a;
+    background: rgba(26, 26, 26, 0.6);
     border-left: 4px solid #4ade80;
-    border-radius: 8px;
-    padding: 2rem;
+    border-radius: 12px;
+    padding: 2.5rem;
     margin-bottom: 2rem;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 .step-title {
     color: #ffffff;
-    font-size: 1.3rem;
-    margin-bottom: 1rem;
-    border-bottom: 2px solid #4ade80;
-    padding-bottom: 0.5rem;
+    font-size: 1.5rem;
+    margin-bottom: 1.25rem;
+    border-bottom: 2px solid rgba(74, 222, 128, 0.5);
+    padding-bottom: 0.75rem;
+    font-weight: 700;
 }
 .step-output {
-    background: #0f0f0f;
-    padding: 1.25rem;
-    border-radius: 6px;
+    background: rgba(15, 15, 15, 0.8);
+    padding: 1.5rem;
+    border-radius: 8px;
     margin-bottom: 1.5rem;
+    border: 1px solid rgba(74, 222, 128, 0.2);
 }
 .step-output pre {
     color: #4ade80;
     font-size: 1rem;
     margin: 0;
     white-space: pre-wrap;
+    line-height: 1.6;
 }
 
 .chart-box {
-    background: #0f0f0f;
-    padding: 1.5rem;
-    border-radius: 6px;
+    background: rgba(15, 15, 15, 0.6);
+    padding: 2rem;
+    border-radius: 12px;
     margin-bottom: 2rem;
-    max-height: 500px;
+    max-height: 600px;
     overflow-y: auto;
+    border: 1px solid rgba(74, 222, 128, 0.2);
 }
 .chart-box img {
     max-width: 100%;
     height: auto;
-    border-radius: 6px;
+    border-radius: 8px;
 }
 
 .metric-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem 0;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+    margin: 2.5rem 0;
 }
 .metric-card {
-    background: #1a1a1a;
-    border: 2px solid #4ade80;
-    border-radius: 8px;
-    padding: 1.5rem;
+    background: rgba(26, 26, 26, 0.8);
+    border: 2px solid rgba(74, 222, 128, 0.4);
+    border-radius: 12px;
+    padding: 2rem;
     text-align: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+.metric-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(74, 222, 128, 0.3);
+    border-color: #4ade80;
 }
 .metric-value {
-    font-size: 2rem;
+    font-size: 2.5rem;
     font-weight: 800;
     color: #4ade80;
     margin-bottom: 0.5rem;
+    text-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
 }
 .metric-label {
-    color: #898989;
-    font-size: 0.9rem;
+    color: #9ca3af;
+    font-size: 0.95rem;
+    font-weight: 500;
 }
 
 .alert-info {
-    background: #1a3a52;
-    border: 2px solid #3b82f6;
+    background: rgba(26, 58, 82, 0.8);
+    border: 2px solid rgba(59, 130, 246, 0.5);
     color: #60a5fa;
     padding: 1.5rem;
-    border-radius: 8px;
+    border-radius: 10px;
     margin: 1rem 0;
+    backdrop-filter: blur(10px);
 }
 .alert-success {
-    background: #0d4f33;
-    border: 2px solid #4ade80;
+    background: rgba(13, 79, 51, 0.8);
+    border: 2px solid rgba(74, 222, 128, 0.5);
     color: #4ade80;
     padding: 1.5rem;
-    border-radius: 8px;
+    border-radius: 10px;
     margin: 1rem 0;
+    backdrop-filter: blur(10px);
 }
 
 .navbar {
     position: sticky;
     top: 0;
-    background: #171717;
-    border-bottom: 2px solid #4ade80;
-    padding: 1rem 0;
-    z-index: 100;
-    margin-bottom: 2rem;
+    background: rgba(10, 10, 10, 0.95);
+    border-bottom: 3px solid #4ade80;
+    padding: 1.5rem 0;
+    z-index: 1000;
+    margin: 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(15px);
 }
 .nav-links {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem;
     justify-content: center;
     flex-wrap: wrap;
+    align-items: center;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
 }
 .nav-link {
     color: #e2e8f0;
     text-decoration: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 6px;
-    background: #1a1a1a;
-    border: 1px solid #292929;
-    transition: all 0.3s;
-    font-size: 0.85rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    background: rgba(26, 26, 26, 0.8);
+    border: 2px solid rgba(74, 222, 128, 0.3);
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    backdrop-filter: blur(5px);
+}
+.nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(74, 222, 128, 0.2), transparent);
+    transition: left 0.5s;
+}
+.nav-link:hover::before {
+    left: 100%;
 }
 .nav-link:hover {
-    background: #4ade80;
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
     color: #0a0a0a;
     border-color: #4ade80;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
 }
 .nav-link.active {
-    background: #006239;
+    background: linear-gradient(135deg, #006239 0%, #004d2d 100%);
     color: #ffffff;
     border-color: #4ade80;
+    box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+}
+.nav-link.active::after {
+    content: '✓';
+    margin-left: 0.5rem;
+    color: #4ade80;
+    font-weight: bold;
 }
 
 .tab-pane {
@@ -245,53 +324,75 @@ input:focus {
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    margin: 1.5rem 0;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
 }
 .stat-item {
-    background: #1a1a1a;
-    border: 1px solid #292929;
-    border-radius: 6px;
-    padding: 1rem;
+    background: rgba(26, 26, 26, 0.6);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    border-radius: 10px;
+    padding: 1.5rem;
     text-align: center;
+    backdrop-filter: blur(5px);
 }
 .stat-value {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: #4ade80;
+    text-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
 }
 .stat-label {
-    font-size: 0.85rem;
-    color: #898989;
+    font-size: 0.9rem;
+    color: #9ca3af;
     margin-top: 0.25rem;
 }
 
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
 }
 
 .table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.9rem;
+    background: rgba(15, 15, 15, 0.6);
+    border-radius: 8px;
+    overflow: hidden;
 }
 .table th {
-    background: #1a1a1a;
+    background: rgba(26, 26, 26, 0.9);
     color: #4ade80;
-    padding: 0.75rem;
+    padding: 1rem 0.75rem;
     text-align: left;
     border-bottom: 2px solid #4ade80;
+    font-weight: 600;
 }
 .table td {
-    padding: 0.5rem 0.75rem;
-    border-bottom: 1px solid #292929;
+    padding: 0.75rem;
+    border-bottom: 1px solid rgba(74, 222, 128, 0.1);
     color: #e2e8f0;
 }
 .table tr:hover {
-    background: #1a1a1a;
+    background: rgba(26, 26, 26, 0.5);
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(15, 15, 15, 0.5);
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(74, 222, 128, 0.5);
+    border-radius: 5px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #4ade80;
 }
 """
 
@@ -348,17 +449,50 @@ def get():
                 Div(
                     H2("Cargar Dataset", cls="section-title"),
                     P("Sube tu archivo CSV con datos de casas", cls="section-subtitle"),
-                    Form(
-                        Div(
-                            Label("Seleccionar Archivo CSV:"),
-                            Input(type="file", name="file", accept=".csv", required=True),
-                            cls="form-group"
+                    
+                    Div(
+                        Form(
+                            Div(
+                                Label("Seleccionar Archivo CSV", style="font-size: 1.1rem; margin-bottom: 1rem; color: #4ade80;"),
+                                Div(
+                                    Input(
+                                        type="file", 
+                                        name="file", 
+                                        accept=".csv", 
+                                        required=True,
+                                        id="fileUpload",
+                                        style="padding: 1.25rem; background: rgba(10, 10, 10, 0.6); border: 2px solid rgba(74, 222, 128, 0.4); border-radius: 10px; font-size: 1rem; cursor: pointer;"
+                                    ),
+                                    style="margin-bottom: 2rem;"
+                                ),
+                                cls="form-group"
+                            ),
+                            Button(
+                                "Cargar y Procesar Datos", 
+                                type="submit", 
+                                cls="btn btn-block",
+                                style="padding: 1.25rem 3rem; font-size: 1rem; border-radius: 10px; letter-spacing: 1px;"
+                            ),
+                            action="/load_data",
+                            method="post",
+                            enctype="multipart/form-data",
+                            style="max-width: 600px; margin: 0 auto;"
                         ),
-                        Button("Cargar y Procesar Datos", type="submit", cls="btn btn-block"),
-                        action="/load_data",
-                        method="post",
-                        enctype="multipart/form-data"
+                        style="background: rgba(15, 15, 15, 0.5); padding: 3rem; border-radius: 16px; border: 2px solid rgba(74, 222, 128, 0.3); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);"
                     ),
+                    
+                    Script("""
+                        const fileUpload = document.getElementById('fileUpload');
+                        if (fileUpload) {
+                            fileUpload.addEventListener('change', function(e) {
+                                if (e.target.files.length > 0) {
+                                    this.style.borderColor = '#4ade80';
+                                    this.style.background = 'rgba(74, 222, 128, 0.1)';
+                                }
+                            });
+                        }
+                    """),
+                    
                     id="upload",
                     cls=f"section tab-pane{' active' if active_tab == 'upload' else ''}"
                 ),
@@ -777,17 +911,45 @@ def generate_prediction_tab(state, has_model, active_tab='upload'):
             )
         )
     
-    # Formulario de nueva predicción
+    # Valores por defecto y rangos para cada característica
+    valores_defaults = {
+        'OverallQual': {'default': 7, 'min': 1, 'max': 10, 'step': 1, 'placeholder': 'Ej: 7 (1-10)'},
+        'GrLivArea': {'default': 1500, 'min': 334, 'max': 5642, 'step': 1, 'placeholder': 'Ej: 1500 (334-5642)'},
+        'GarageCars': {'default': 2, 'min': 0, 'max': 4, 'step': 1, 'placeholder': 'Ej: 2 (0-4)'},
+        'GarageArea': {'default': 480, 'min': 0, 'max': 1418, 'step': 1, 'placeholder': 'Ej: 480 (0-1418)'},
+        'TotalBsmtSF': {'default': 1000, 'min': 0, 'max': 6110, 'step': 1, 'placeholder': 'Ej: 1000 (0-6110)'},
+        '1stFlrSF': {'default': 1000, 'min': 334, 'max': 4692, 'step': 1, 'placeholder': 'Ej: 1000 (334-4692)'},
+        'FullBath': {'default': 2, 'min': 0, 'max': 3, 'step': 1, 'placeholder': 'Ej: 2 (0-3)'},
+        'YearBuilt': {'default': 2000, 'min': 1872, 'max': 2010, 'step': 1, 'placeholder': 'Ej: 2000 (1872-2010)'},
+        'YearRemodAdd': {'default': 2000, 'min': 1950, 'max': 2010, 'step': 1, 'placeholder': 'Ej: 2000 (1950-2010)'},
+        'TotRmsAbvGrd': {'default': 6, 'min': 2, 'max': 14, 'step': 1, 'placeholder': 'Ej: 6 (2-14)'}
+    }
+    
+    # Formulario de nueva predicción con validaciones
     content.append(
         Div(
             H3("Nueva Predicción:", cls="step-title", style="color: #4ade80;"),
+            Div(
+                P("Ejemplo de casa típica precargado. Modifica los valores según necesites.", 
+                  style="color: #fbbf24; margin-bottom: 1rem; font-size: 0.95rem;"),
+                cls="alert-info"
+            ),
             Form(
                 Div(
                     *[Div(
                         Label(traduccion.get(feat, feat)),
-                        Input(type="number", name=feat, required=True, step="any", placeholder=f"Ingrese {traduccion.get(feat, feat).lower()}"),
+                        Input(
+                            type="number", 
+                            name=feat, 
+                            required=True, 
+                            step=str(valores_defaults[feat]['step']),
+                            min=str(valores_defaults[feat]['min']),
+                            max=str(valores_defaults[feat]['max']),
+                            value=str(valores_defaults[feat]['default']),
+                            placeholder=valores_defaults[feat]['placeholder']
+                        ),
                         cls="form-group"
-                    ) for feat in features],
+                    ) for feat in features if feat in valores_defaults],
                     cls="form-grid"
                 ),
                 Button("Calcular Precio Predicho", type="submit", cls="btn btn-block"),
@@ -834,8 +996,8 @@ async def post(file: UploadFile):
         if 'step1_nulls' in processor.step_charts_data:
             data = processor.step_charts_data['step1_nulls']
             charts['step1'] = create_nulls_filled_chart(
-                data['nulls_numeric'],
-                data['nulls_categorical']
+                data['nulos_numericos'],
+                data['nulos_categoricos']
             )
         
         # PASO 2: Correlación
@@ -847,19 +1009,19 @@ async def post(file: UploadFile):
         if 'step4_outliers' in processor.step_charts_data:
             data = processor.step_charts_data['step4_outliers']
             charts['step4'] = create_outliers_comparison_chart(
-                data['grliv_before'],
-                data['price_before'],
-                data['grliv_after'],
-                data['price_after'],
-                data['threshold']
+                data['area_antes'],
+                data['precio_antes'],
+                data['area_despues'],
+                data['precio_despues'],
+                data['umbral']
             )
         
         # PASO 5: Log transformation
         if 'step5_log' in processor.step_charts_data:
             data = processor.step_charts_data['step5_log']
             charts['step5'] = create_log_transformation_chart(
-                data['price_original'],
-                data['price_log']
+                data['precio_original'],
+                data['precio_log']
             )
         
         # Estadísticas del dataset
