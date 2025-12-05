@@ -49,28 +49,98 @@ body {
     align-items: center;
     min-height: 100vh;
     padding: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+.auth-container::before {
+    content: '';
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(74, 222, 128, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    top: -250px;
+    right: -250px;
+    animation: float 20s infinite ease-in-out;
+}
+.auth-container::after {
+    content: '';
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    bottom: -200px;
+    left: -200px;
+    animation: float 15s infinite ease-in-out reverse;
+}
+@keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(30px, -30px) scale(1.1); }
+    50% { transform: translate(-20px, 20px) scale(0.9); }
+    75% { transform: translate(40px, 10px) scale(1.05); }
 }
 .auth-box {
-    background: rgba(23, 23, 23, 0.9);
-    border: 2px solid rgba(74, 222, 128, 0.3);
-    border-radius: 16px;
-    padding: 3rem;
-    max-width: 450px;
+    background: linear-gradient(145deg, rgba(23, 23, 23, 0.95) 0%, rgba(15, 15, 15, 0.98) 100%);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+    position: relative;
+    border-radius: 24px;
+    padding: 3.5rem;
+    max-width: 480px;
     width: 100%;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(10px);
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(74, 222, 128, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    z-index: 10;
+    animation: slideUp 0.6s ease-out;
+}
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.auth-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 24px;
+    padding: 2px;
+    background: linear-gradient(135deg, #4ade80, #22c55e, #16a34a);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.6;
 }
 .auth-title {
-    font-size: 2rem;
-    color: #4ade80;
+    font-size: 2.25rem;
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     text-align: center;
-    margin-bottom: 2rem;
-    font-weight: 700;
+    margin-bottom: 0.75rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    animation: titleGlow 3s ease-in-out infinite;
+}
+@keyframes titleGlow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.3)); }
+    50% { filter: drop-shadow(0 0 16px rgba(74, 222, 128, 0.5)); }
 }
 .auth-subtitle {
     color: #9ca3af;
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
+    font-size: 1.05rem;
+    font-weight: 400;
 }
 .container { 
     max-width: 100%;
@@ -124,60 +194,117 @@ body {
     font-size: 1.1rem;
 }
 
-.form-group { margin-bottom: 1.5rem; }
+.form-group { 
+    margin-bottom: 1.75rem; 
+    position: relative;
+    animation: fadeIn 0.5s ease-out backwards;
+}
+.form-group:nth-child(1) { animation-delay: 0.1s; }
+.form-group:nth-child(2) { animation-delay: 0.2s; }
+.form-group:nth-child(3) { animation-delay: 0.3s; }
+.form-group:nth-child(4) { animation-delay: 0.4s; }
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
 label { 
     display: block; 
     font-weight: 600; 
-    color: #e2e8f0; 
-    margin-bottom: 0.5rem;
-    font-size: 0.95rem;
+    color: #f3f4f6; 
+    margin-bottom: 0.65rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    opacity: 0.9;
 }
 input[type="file"], input[type="number"], input[type="text"], input[type="password"], input[type="email"] {
     width: 100%;
-    padding: 1rem 1.25rem;
-    border: 2px solid rgba(74, 222, 128, 0.3);
-    background: rgba(15, 15, 15, 0.9);
-    color: #e2e8f0;
-    border-radius: 10px;
+    padding: 1.1rem 1.5rem;
+    border: 2px solid rgba(74, 222, 128, 0.25);
+    background: rgba(10, 10, 10, 0.8);
+    color: #f3f4f6;
+    border-radius: 12px;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    position: relative;
 }
 input::placeholder {
     color: #6b7280;
     font-size: 0.95rem;
+    transition: color 0.3s ease;
+}
+input:hover {
+    border-color: rgba(74, 222, 128, 0.4);
+    background: rgba(15, 15, 15, 0.9);
 }
 input:focus {
     outline: none;
     border-color: #4ade80;
-    background: rgba(26, 26, 26, 0.95);
-    box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.15), 0 4px 12px rgba(74, 222, 128, 0.2);
-    transform: translateY(-1px);
+    background: rgba(20, 20, 20, 0.95);
+    box-shadow: 
+        0 0 0 4px rgba(74, 222, 128, 0.12),
+        0 8px 24px rgba(74, 222, 128, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+input:focus::placeholder {
+    color: #9ca3af;
 }
 
 .btn {
-    background: linear-gradient(135deg, #006239 0%, #004d2d 100%);
-    color: #ffffff;
-    border: none;
-    padding: 1rem 2.5rem;
-    font-size: 0.9rem;
-    font-weight: 700;
-    border-radius: 8px;
-    cursor: pointer;
-    width: 100%;
-    max-width: 350px;
+    background: linear-gradient(135deg, #4ade80 0%, #22c55e 50%, #16a34a 100%);
+    background-size: 200% 100%;
+    color: #0a0a0a; 
+    border: none; 
+    padding: 1.15rem 2.5rem; 
+    border-radius: 12px; 
+    cursor: pointer; 
+    font-weight: 700; 
+    font-size: 1rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 20px rgba(74, 222, 128, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
     text-transform: uppercase;
-    transition: all 0.3s ease;
+    letter-spacing: 1px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.5s ease-out 0.5s backwards;
+    width: 100%;
+    max-width: 100%;
     display: block;
     margin: 0 auto;
-    box-shadow: 0 4px 15px rgba(0, 98, 57, 0.3);
-    letter-spacing: 0.5px;
 }
-.btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(74, 222, 128, 0.5);
-    background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
-    color: #0a0a0a;
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+.btn:hover { 
+    background-position: 100% 0;
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 35px rgba(74, 222, 128, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+.btn:active {
+    transform: translateY(-1px) scale(0.98);
+    box-shadow: 0 4px 15px rgba(74, 222, 128, 0.4);
 }
 .btn-block {
     max-width: 100%;
@@ -282,6 +409,100 @@ input:focus {
     backdrop-filter: blur(10px);
 }
 
+.auth-link {
+    color: #4ade80;
+    text-decoration: none;
+    font-weight: 600;
+    position: relative;
+    transition: all 0.3s ease;
+}
+.auth-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #4ade80, #22c55e);
+    transition: width 0.3s ease;
+}
+.auth-link:hover {
+    color: #22c55e;
+    letter-spacing: 0.5px;
+}
+.auth-link:hover::after {
+    width: 100%;
+}
+.auth-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(74, 222, 128, 0.15);
+    color: #9ca3af;
+    font-size: 0.95rem;
+    animation: fadeIn 0.5s ease-out 0.6s backwards;
+}
+.alert-info, .alert-success, .alert-error {
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    animation: slideDown 0.4s ease-out;
+}
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+.alert-success {
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    color: #86efac;
+}
+.auth-link {
+    color: #4ade80;
+    text-decoration: none;
+    font-weight: 600;
+    position: relative;
+    transition: all 0.3s ease;
+}
+.auth-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #4ade80, #22c55e);
+    transition: width 0.3s ease;
+}
+.auth-link:hover {
+    color: #22c55e;
+    letter-spacing: 0.5px;
+}
+.auth-link:hover::after {
+    width: 100%;
+}
+.auth-footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(74, 222, 128, 0.15);
+    color: #9ca3af;
+    font-size: 0.95rem;
+    animation: fadeIn 0.5s ease-out 0.6s backwards;
+}
 .navbar {
     position: sticky;
     top: 0;
@@ -431,6 +652,55 @@ input:focus {
 ::-webkit-scrollbar-thumb:hover {
     background: #4ade80;
 }
+
+/* Modal de Loading */
+.loading-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease-out;
+}
+.loading-overlay.active {
+    display: flex;
+}
+.loading-content {
+    text-align: center;
+    background: linear-gradient(145deg, rgba(23, 23, 23, 0.95) 0%, rgba(15, 15, 15, 0.98) 100%);
+    padding: 3rem 4rem;
+    border-radius: 20px;
+    border: 2px solid rgba(74, 222, 128, 0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(74, 222, 128, 0.2);
+}
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(74, 222, 128, 0.2);
+    border-top-color: #4ade80;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1.5rem;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+.loading-text {
+    color: #4ade80;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+.loading-subtext {
+    color: #9ca3af;
+    font-size: 0.95rem;
+}
 """
 
 @rt("/")
@@ -457,11 +727,11 @@ def get():
             Div(
                 Div(
                     H1("House Price Prediction", cls="auth-title"),
-                    P("Ingresa tus credenciales", cls="auth-subtitle"),
+                    P("🔒 Ingresa tus credenciales", cls="auth-subtitle"),
                     
                     Div(
-                        P(error_msg, style="color: #ef4444; text-align: center; margin-bottom: 1rem;"),
-                        cls="alert-info"
+                        P(error_msg),
+                        cls="alert-error"
                     ) if error_msg else None,
                     
                     Form(
@@ -482,9 +752,9 @@ def get():
                     
                     Div(
                         P("¿No tienes cuenta? ", 
-                          A("Regístrate aquí", href="/register", style="color: #4ade80; text-decoration: none; font-weight: 600;"),
-                          style="text-align: center; margin-top: 1.5rem; color: #9ca3af;"
-                        )
+                          A("Regístrate aquí", href="/register", cls="auth-link"),
+                        ),
+                        cls="auth-footer"
                     ),
                     
                     cls="auth-box"
@@ -528,15 +798,17 @@ def get():
         Body(
             Div(
                 Div(
-                    H1("Crear Cuenta", cls="auth-title"),
+                    H1("✨ Crear Cuenta", cls="auth-title"),
                     P("Regístrate para usar el sistema", cls="auth-subtitle"),
                     
                     Div(
-                        P(error_msg, style="color: #ef4444; text-align: center; margin-bottom: 1rem;")
+                        P(error_msg),
+                        cls="alert-error"
                     ) if error_msg else None,
                     
                     Div(
-                        P(success_msg, style="color: #4ade80; text-align: center; margin-bottom: 1rem;")
+                        P(success_msg),
+                        cls="alert-success"
                     ) if success_msg else None,
                     
                     Form(
@@ -567,9 +839,9 @@ def get():
                     
                     Div(
                         P("¿Ya tienes cuenta? ", 
-                          A("Inicia sesión aquí", href="/login", style="color: #4ade80; text-decoration: none; font-weight: 600;"),
-                          style="text-align: center; margin-top: 1.5rem; color: #9ca3af;"
-                        )
+                          A("Inicia sesión aquí", href="/login", cls="auth-link"),
+                        ),
+                        cls="auth-footer"
                     ),
                     
                     cls="auth-box"
@@ -718,6 +990,18 @@ def get():
                 generate_evaluation_tab(app_state, has_model, active_tab),
                 generate_prediction_tab(app_state, has_model, active_tab),
                 
+                # Modal de loading
+                Div(
+                    Div(
+                        Div(cls="loading-spinner"),
+                        Div("Procesando...", cls="loading-text"),
+                        Div("Por favor espera", cls="loading-subtext"),
+                        cls="loading-content"
+                    ),
+                    id="loadingModal",
+                    cls="loading-overlay"
+                ),
+                
                 Script(f"""
                     function showTab(tabId) {{
                         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
@@ -728,6 +1012,29 @@ def get():
                     // Activar tab correcto al cargar
                     window.addEventListener('load', function() {{
                         showTab('{active_tab}');
+                    }});
+                    
+                    // Mostrar modal de loading al enviar formularios
+                    document.addEventListener('submit', function(e) {{
+                        const form = e.target;
+                        const action = form.getAttribute('action');
+                        
+                        // Solo mostrar loading para carga de datos y entrenamiento
+                        if (action === '/load_data' || action === '/train') {{
+                            const modal = document.getElementById('loadingModal');
+                            const loadingText = modal.querySelector('.loading-text');
+                            const loadingSubtext = modal.querySelector('.loading-subtext');
+                            
+                            if (action === '/load_data') {{
+                                loadingText.textContent = 'Cargando datos...';
+                                loadingSubtext.textContent = 'Procesando el archivo CSV';
+                            }} else if (action === '/train') {{
+                                loadingText.textContent = 'Entrenando modelo...';
+                                loadingSubtext.textContent = 'Esto puede tomar unos minutos';
+                            }}
+                            
+                            modal.classList.add('active');
+                        }}
                     }});
                 """),
                 
@@ -1333,6 +1640,9 @@ async def post(request):
             'features': features_dict,
             'price': prediction
         }
+        
+        # Mantener en la tab de predicción
+        app_state['active_tab'] = 'prediction'
         
         # Redirigir a la página principal
         return RedirectResponse('/', status_code=303)
