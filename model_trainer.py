@@ -5,8 +5,6 @@ import numpy as np
 import xgboost as xgb
 from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-import pickle
-import os
 
 
 class ModelTrainer:
@@ -16,12 +14,10 @@ class ModelTrainer:
         self.model = None
         self.best_params = None
         self.metrics = {}
-        self.training_log = []
-        self.training_output = []  # Nuevo: outputs detallados
+        self.training_output = []  # Outputs detallados para mostrar en UI
         
     def train_model(self, X, y):
         """Entrena el modelo con optimización"""
-        self._log("Dividiendo datos en entrenamiento y prueba (80-20)")
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
@@ -32,7 +28,6 @@ class ModelTrainer:
             'output': f'Train: {len(X_train)} muestras | Test: {len(X_test)} muestras (80/20 split)'
         })
         
-        self._log("Iniciando optimización de hiperparámetros...")
         self.training_output.append({
             'step': 'optimization_start',
             'name': 'Búsqueda de hiperparámetros',
@@ -41,7 +36,6 @@ class ModelTrainer:
         self.model = self._optimize_hyperparameters(X_train, y_train)
         
         # Evaluar modelo
-        self._log("Evaluando modelo en conjunto de prueba...")
         y_pred = self.model.predict(X_test)
         self.metrics = self._evaluate_model(X_test, y_test)
         
@@ -74,18 +68,12 @@ class ModelTrainer:
             verbose=1
         )
         
-        self._log("Probando 20 combinaciones de hiperparámetros con validación cruzada...")
         busqueda_aleatoria.fit(X_train, y_train)
         
         modelo = busqueda_aleatoria.best_estimator_
         mejores_params = busqueda_aleatoria.best_params_
         
         self.best_params = mejores_params
-        self._log("OPTIMIZACIÓN COMPLETADA")
-        self._log("\nMejores hiperparámetros:")
-        for param, valor in mejores_params.items():
-            self._log(f"  • {param}: {valor}")
-        self._log(f"\nMejor RMSE en CV: {-busqueda_aleatoria.best_score_:.4f}")
         
         # Guardar output de optimización
         params_str = "\n".join([f"  • {param}: {valor}" for param, valor in mejores_params.items()])
@@ -118,10 +106,6 @@ class ModelTrainer:
             'mae': mean_absolute_error(y_test_orig, y_pred_orig)
         }
         
-        self._log(f"R² Score: {metrics['r2']:.4f}")
-        self._log(f"RMSE: ${metrics['rmse']:,.2f}")
-        self._log(f"MAE: ${metrics['mae']:,.2f}")
-        
         # Guardar output de evaluación
         self.training_output.append({
             'step': 'evaluation',
@@ -133,61 +117,6 @@ class ModelTrainer:
         })
         
         return metrics
-    
-    def save_model(self, model_dir, features_list, label_encoders):
-        """Guarda el modelo y metadatos"""
-        os.makedirs(model_dir, exist_ok=True)
-        
-        # Guardar modelo
-        model_path = os.path.join(model_dir, 'modelo_casas.pkl')
-        with open(model_path, 'wb') as f:
-            pickle.dump(self.model, f)
-        
-        # Guardar encoders
-        encoders_path = os.path.join(model_dir, 'label_encoders.pkl')
-        with open(encoders_path, 'wb') as f:
-            pickle.dump(label_encoders, f)
-        
-        # Guardar features
-        features_path = os.path.join(model_dir, 'features.pkl')
-        with open(features_path, 'wb') as f:
-            pickle.dump(features_list, f)
-        
-        # Guardar métricas
-        metrics_path = os.path.join(model_dir, 'metrics.pkl')
-        with open(metrics_path, 'wb') as f:
-            pickle.dump(self.metrics, f)
-        
-        self._log(f"Modelo guardado en {model_dir}")
-        
-        return {
-            'model_path': model_path,
-            'encoders_path': encoders_path,
-            'features_path': features_path,
-            'metrics_path': metrics_path
-        }
-    
-    @staticmethod
-    def load_model(model_dir):
-        """Carga el modelo guardado"""
-        model_path = os.path.join(model_dir, 'modelo_casas.pkl')
-        encoders_path = os.path.join(model_dir, 'label_encoders.pkl')
-        features_path = os.path.join(model_dir, 'features.pkl')
-        metrics_path = os.path.join(model_dir, 'metrics.pkl')
-        
-        with open(model_path, 'rb') as f:
-            model = pickle.load(f)
-        
-        with open(encoders_path, 'rb') as f:
-            encoders = pickle.load(f)
-        
-        with open(features_path, 'rb') as f:
-            features = pickle.load(f)
-        
-        with open(metrics_path, 'rb') as f:
-            metrics = pickle.load(f)
-        
-        return model, encoders, features, metrics
     
     def predict(self, features_dict):
         """Hace una predicción con el modelo"""
@@ -205,14 +134,6 @@ class ModelTrainer:
         y_pred = np.expm1(y_pred_log)[0]
         
         return y_pred
-    
-    def _log(self, message):
-        """Registra un mensaje del entrenamiento"""
-        self.training_log.append(message)
-    
-    def get_training_log(self):
-        """Retorna el log del entrenamiento"""
-        return self.training_log
     
     def get_feature_importance(self, feature_names):
         """Obtiene la importancia de las características"""

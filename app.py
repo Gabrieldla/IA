@@ -5,20 +5,14 @@ Simple web interface siguiendo exactamente el flujo de la notebook
 from fasthtml.common import *
 from starlette.responses import RedirectResponse
 import pandas as pd
-import pickle
-from pathlib import Path
 
 from data_processor import HousePriceDataProcessor
 from model_trainer import ModelTrainer
 from plot_utils import *
-from auth import register_user, login_user, get_user_info
+from auth import register_user, login_user
 
 # Configuración
 app, rt = fast_app(live=True, pico=False)
-UPLOAD_DIR = Path("uploads")
-MODELS_DIR = Path("models")
-UPLOAD_DIR.mkdir(exist_ok=True)
-MODELS_DIR.mkdir(exist_ok=True)
 
 # Estado global
 app_state = {
@@ -727,7 +721,7 @@ def get():
             Div(
                 Div(
                     H1("House Price Prediction", cls="auth-title"),
-                    P("🔒 Ingresa tus credenciales", cls="auth-subtitle"),
+                    P("Ingresa tus credenciales", cls="auth-subtitle"),
                     
                     Div(
                         P(error_msg),
@@ -798,7 +792,7 @@ def get():
         Body(
             Div(
                 Div(
-                    H1("✨ Crear Cuenta", cls="auth-title"),
+                    H1(" Crear Cuenta", cls="auth-title"),
                     P("Regístrate para usar el sistema", cls="auth-subtitle"),
                     
                     Div(
@@ -1138,10 +1132,10 @@ def generate_features_tab(state, has_data, active_tab='upload'):
     df_describe = df.describe()
     
     # Generar gráficos estadísticos de SalePrice
-    from plot_utils import create_saleprice_boxplot, create_saleprice_quartiles_chart
+    from plot_utils import crear_boxplot_saleprice, crear_grafico_cuartiles_saleprice
     
-    boxplot_chart = create_saleprice_boxplot(df)
-    quartiles_chart = create_saleprice_quartiles_chart(df)
+    boxplot_chart = crear_boxplot_saleprice(df)
+    quartiles_chart = crear_grafico_cuartiles_saleprice(df)
     
     return Div(
         H2("Características Estadísticas", cls="section-title"),
@@ -1491,12 +1485,10 @@ def generate_prediction_tab(state, has_model, active_tab='upload'):
 async def post(file: UploadFile):
     """Carga y procesa el dataset"""
     try:
-        # Guardar archivo
-        file_path = UPLOAD_DIR / file.filename
-        file_path.write_bytes(await file.read())
-        
-        # Leer CSV
-        df = pd.read_csv(file_path)
+        # Leer CSV directamente desde el upload (sin guardar en disco)
+        import io
+        contents = await file.read()
+        df = pd.read_csv(io.BytesIO(contents))
         app_state['df_original'] = df
         
         # Obtener información inicial
@@ -1515,7 +1507,7 @@ async def post(file: UploadFile):
         # PASO 1: Nulos
         if 'step1_nulls' in processor.step_charts_data:
             data = processor.step_charts_data['step1_nulls']
-            charts['step1'] = create_nulls_filled_chart(
+            charts['step1'] = crear_grafico_nulos_rellenados(
                 data['nulos_numericos'],
                 data['nulos_categoricos']
             )
@@ -1523,12 +1515,12 @@ async def post(file: UploadFile):
         # PASO 2: Correlación
         if 'step2_correlation' in processor.step_charts_data:
             corr_data = processor.step_charts_data['step2_correlation']
-            charts['step2'] = create_correlation_bar_chart(corr_data)
+            charts['step2'] = crear_grafico_barras_correlacion(corr_data)
         
         # PASO 4: Outliers
         if 'step4_outliers' in processor.step_charts_data:
             data = processor.step_charts_data['step4_outliers']
-            charts['step4'] = create_outliers_comparison_chart(
+            charts['step4'] = crear_grafico_comparacion_outliers(
                 data['area_antes'],
                 data['precio_antes'],
                 data['area_despues'],
@@ -1539,7 +1531,7 @@ async def post(file: UploadFile):
         # PASO 5: Log transformation
         if 'step5_log' in processor.step_charts_data:
             data = processor.step_charts_data['step5_log']
-            charts['step5'] = create_log_transformation_chart(
+            charts['step5'] = crear_grafico_transformacion_log(
                 data['precio_original'],
                 data['precio_log']
             )
@@ -1548,7 +1540,7 @@ async def post(file: UploadFile):
         info = initial_info
         
         # Gráfico top 15 nulos
-        top15_chart = create_top_nulls_chart(df)
+        top15_chart = crear_grafico_top_nulos(df)
         
         app_state['charts'] = {'steps': charts}
         app_state['initial_info'] = info
@@ -1579,15 +1571,11 @@ async def post():
         df_processed = app_state['df_processed']
         
         # Preparar features
-        df_encoded = processor.encode_categorical(df_processed)
-        X, y, features = processor.prepare_features(df_encoded)
+        X, y, features = processor.prepare_features(df_processed)
         
         # Entrenar modelo
         trainer = ModelTrainer()
         model, metrics, X_test, y_test, y_pred = trainer.train_model(X, y)
-        
-        # Guardar modelo
-        trainer.save_model(str(MODELS_DIR), features, processor.label_encoders)
         
         # Guardar en estado
         app_state['trainer'] = trainer
@@ -1597,10 +1585,10 @@ async def post():
         
         # Gráficos
         feature_importance = trainer.get_feature_importance(features)
-        importance_chart = create_feature_importance_chart(feature_importance)
-        predictions_chart = create_predictions_vs_real_chart(y_test, y_pred)
+        importance_chart = crear_grafico_importancia_caracteristicas(feature_importance)
+        predictions_chart = crear_grafico_predicciones_vs_reales(y_test, y_pred)
         residuos = y_test - y_pred
-        residuals_chart = create_residuals_chart(y_pred, residuos)
+        residuals_chart = crear_grafico_residuos(y_pred, residuos)
         
         app_state['importance_chart'] = importance_chart
         app_state['predictions_chart'] = predictions_chart

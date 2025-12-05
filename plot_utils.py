@@ -21,72 +21,7 @@ def plot_to_base64(fig):
     return f"data:image/png;base64,{img_base64}"
 
 
-def create_nulls_chart(df):
-    """Crea gráfico de valores nulos"""
-    na_count = df.isna().sum().sort_values(ascending=False)
-    na_count = na_count[na_count > 0].head(10)
-    
-    if len(na_count) == 0:
-        return None
-    
-    fig, ax = plt.subplots(figsize=(10, 5))
-    sns.barplot(x=na_count.values, y=na_count.index, ax=ax, palette='viridis')
-    ax.set_title('Top 10 Columnas con Valores Nulos', fontsize=14, fontweight='bold')
-    ax.set_xlabel('Cantidad de Nulos')
-    ax.set_ylabel('Columna')
-    ax.grid(axis='x', alpha=0.3)
-    
-    return plot_to_base64(fig)
-
-
-def create_price_distribution(df):
-    """Crea gráfico de distribución de precios"""
-    if 'SalePrice' not in df.columns:
-        return None
-    
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-    
-    # Precio original
-    sns.histplot(df['SalePrice'], bins=50, kde=True, ax=axes[0], color='steelblue')
-    axes[0].set_title('Distribución de SalePrice', fontsize=12, fontweight='bold')
-    axes[0].set_xlabel('Precio ($)')
-    axes[0].set_ylabel('Frecuencia')
-    
-    # Precio transformado (log)
-    if 'SalePrice_log' in df.columns:
-        sns.histplot(df['SalePrice_log'], bins=50, kde=True, ax=axes[1], color='coral')
-        axes[1].set_title('Distribución de SalePrice (Log)', fontsize=12, fontweight='bold')
-        axes[1].set_xlabel('Log(Precio)')
-        axes[1].set_ylabel('Frecuencia')
-    
-    plt.tight_layout()
-    return plot_to_base64(fig)
-
-
-def create_correlation_heatmap(df, target='SalePrice'):
-    """Crea heatmap de correlaciones con el precio"""
-    if target not in df.columns:
-        return None
-    
-    # Seleccionar solo columnas numéricas
-    numeric_df = df.select_dtypes(include=[np.number])
-    
-    # Calcular correlación con target
-    corr = numeric_df.corr()[target].sort_values(ascending=False).head(15)
-    
-    fig, ax = plt.subplots(figsize=(8, 6))
-    colors = ['green' if x > 0 else 'red' for x in corr.values]
-    ax.barh(corr.index, corr.values, color=colors, alpha=0.7)
-    ax.set_xlabel('Correlación con SalePrice')
-    ax.set_title('Top 15 Características más Correlacionadas', fontsize=12, fontweight='bold')
-    ax.axvline(0, color='black', linewidth=0.8)
-    ax.grid(axis='x', alpha=0.3)
-    
-    plt.tight_layout()
-    return plot_to_base64(fig)
-
-
-def create_feature_importance_chart(feature_importance):
+def crear_grafico_importancia_caracteristicas(feature_importance):
     """Crea gráfico de importancia de características"""
     if not feature_importance:
         return None
@@ -108,7 +43,7 @@ def create_feature_importance_chart(feature_importance):
     return plot_to_base64(fig)
 
 
-def create_predictions_vs_real_chart(y_test, y_pred):
+def crear_grafico_predicciones_vs_reales(y_test, y_pred):
     """Crea gráfico de predicciones vs valores reales - EXACTO como notebook"""
     fig, ax = plt.subplots(figsize=(10, 6))
     
@@ -134,7 +69,7 @@ def create_predictions_vs_real_chart(y_test, y_pred):
     return plot_to_base64(fig)
 
 
-def create_residuals_chart(y_pred, residuos):
+def crear_grafico_residuos(y_pred, residuos):
     """Crea gráficos de residuos (scatter + histogram) - EXACTO como notebook"""
     fig, ejes = plt.subplots(1, 2, figsize=(16, 6))
     
@@ -163,149 +98,7 @@ def create_residuals_chart(y_pred, residuos):
     return plot_to_base64(fig)
 
 
-def create_prediction_comparison_chart(features_dict, df_processed):
-    """Crea gráfico comparando características de la casa vs promedio del dataset"""
-    if df_processed is None or df_processed.empty:
-        return None
-    
-    # Seleccionar características numéricas principales
-    main_features = ['OverallQual', 'GrLivArea', 'GarageCars', 'TotalBsmtSF', '1stFlrSF', 'FullBath']
-    
-    # Filtrar solo las que existen en ambos
-    available_features = [f for f in main_features if f in features_dict and f in df_processed.columns]
-    
-    if not available_features:
-        return None
-    
-    # Calcular promedios del dataset
-    dataset_means = df_processed[available_features].mean()
-    input_values = [features_dict.get(f, 0) for f in available_features]
-    
-    # Normalizar valores (cada característica en escala 0-100)
-    normalization = {
-        'OverallQual': 10,
-        'GrLivArea': 5000,
-        'GarageCars': 4,
-        'TotalBsmtSF': 3000,
-        '1stFlrSF': 3000,
-        'FullBath': 4,
-        'YearBuilt': 2024,
-        'YearRemodAdd': 2024,
-        'TotRmsAbvGrd': 15
-    }
-    
-    input_normalized = [(input_values[i] / normalization.get(f, 1)) * 100 for i, f in enumerate(available_features)]
-    dataset_normalized = [(dataset_means[f] / normalization.get(f, 1)) * 100 for f in available_features]
-    
-    # Crear gráfico
-    fig, ax = plt.subplots(figsize=(14, 7))
-    x = np.arange(len(available_features))
-    width = 0.35
-    
-    bars1 = ax.bar(x - width/2, input_normalized, width, label='Tu Casa', color='#4ade80', alpha=0.9, edgecolor='black', linewidth=1.5)
-    bars2 = ax.bar(x + width/2, dataset_normalized, width, label='Promedio Dataset', color='#60a5fa', alpha=0.9, edgecolor='black', linewidth=1.5)
-    
-    # Agregar valores reales encima de las barras
-    for i, (bar1, bar2, val1, val2) in enumerate(zip(bars1, bars2, input_values, dataset_means)):
-        # Valor de tu casa
-        ax.text(bar1.get_x() + bar1.get_width()/2, bar1.get_height() + 2,
-                f'{val1:.0f}', ha='center', va='bottom', fontsize=10, fontweight='bold', color='#006239')
-        # Valor promedio
-        ax.text(bar2.get_x() + bar2.get_width()/2, bar2.get_height() + 2,
-                f'{val2:.0f}', ha='center', va='bottom', fontsize=10, fontweight='bold', color='#1e40af')
-    
-    ax.set_xlabel('Características', fontsize=12, fontweight='bold')
-    ax.set_ylabel('Escala Normalizada (0-100)', fontsize=12, fontweight='bold')
-    ax.set_title('Comparación Normalizada: Tu Casa vs Promedio del Mercado', fontsize=14, fontweight='bold')
-    ax.set_xticks(x)
-    ax.set_xticklabels(available_features, rotation=0, ha='center', fontsize=11)
-    ax.legend(fontsize=11, loc='upper left')
-    ax.grid(axis='y', alpha=0.3)
-    ax.set_ylim(0, 120)
-    
-    # Agregar línea de referencia en 50%
-    ax.axhline(50, color='gray', linestyle='--', linewidth=1, alpha=0.5, label='50% de escala')
-    
-    plt.tight_layout()
-    return plot_to_base64(fig)
-
-
-def create_price_position_chart(predicted_price, df_processed):
-    """Crea gráfico mostrando la posición del precio predicho en la distribución"""
-    if df_processed is None or 'SalePrice' not in df_processed.columns:
-        return None
-    
-    fig, ax = plt.subplots(figsize=(12, 6))
-    
-    # Histograma de precios del dataset
-    ax.hist(df_processed['SalePrice'], bins=50, color='#60a5fa', alpha=0.6, edgecolor='black')
-    
-    # Línea vertical para la predicción
-    ax.axvline(predicted_price, color='#4ade80', linestyle='--', linewidth=3, label=f'Predicción: ${predicted_price:,.0f}')
-    
-    # Líneas para cuartiles
-    q25 = df_processed['SalePrice'].quantile(0.25)
-    q50 = df_processed['SalePrice'].quantile(0.50)
-    q75 = df_processed['SalePrice'].quantile(0.75)
-    
-    ax.axvline(q25, color='gray', linestyle=':', linewidth=1.5, alpha=0.5, label=f'Q1: ${q25:,.0f}')
-    ax.axvline(q50, color='gray', linestyle=':', linewidth=1.5, alpha=0.5, label=f'Mediana: ${q50:,.0f}')
-    ax.axvline(q75, color='gray', linestyle=':', linewidth=1.5, alpha=0.5, label=f'Q3: ${q75:,.0f}')
-    
-    ax.set_xlabel('Precio ($)', fontsize=11, fontweight='bold')
-    ax.set_ylabel('Frecuencia', fontsize=11, fontweight='bold')
-    ax.set_title('Posición de tu Predicción en el Mercado', fontsize=13, fontweight='bold')
-    ax.legend(loc='upper right')
-    ax.grid(axis='y', alpha=0.3)
-    
-    plt.tight_layout()
-    return plot_to_base64(fig)
-
-
-def create_feature_contribution_chart(features_dict, feature_importance):
-    """Crea gráfico mostrando la contribución de cada característica en esta predicción"""
-    if not feature_importance or not features_dict:
-        return None
-    
-    # Filtrar solo características con importancia > 0.01
-    significant_features = [f for f in feature_importance if f['importance'] > 0.01][:8]
-    
-    if not significant_features:
-        return None
-    
-    feature_names = [f['feature'] for f in significant_features]
-    importance_values = [f['importance'] for f in significant_features]
-    input_values = [features_dict.get(f['feature'], 0) for f in significant_features]
-    
-    # Crear gráfico con importancia real del modelo
-    fig, ax = plt.subplots(figsize=(12, 6))
-    
-    # Usar directamente la importancia del modelo (más confiable)
-    colors = ['#4ade80' if imp > np.mean(importance_values) else '#60a5fa' for imp in importance_values]
-    bars = ax.barh(feature_names, importance_values, color=colors, alpha=0.8)
-    
-    ax.set_xlabel('Importancia en el Modelo (0-1)', fontsize=11, fontweight='bold')
-    ax.set_ylabel('Característica', fontsize=11, fontweight='bold')
-    ax.set_title('Importancia de Características Según el Modelo XGBoost', fontsize=13, fontweight='bold')
-    ax.grid(axis='x', alpha=0.3)
-    
-    # Agregar valores de entrada como anotaciones en el lado derecho
-    max_importance = max(importance_values)
-    for i, (bar, val, imp) in enumerate(zip(bars, input_values, importance_values)):
-        # Mostrar valor ingresado
-        ax.text(max_importance * 1.05, bar.get_y() + bar.get_height()/2, 
-                f'Tu valor: {val:.0f}', 
-                ha='left', va='center', fontsize=9, color='#4ade80', fontweight='bold')
-        # Mostrar porcentaje de importancia
-        ax.text(bar.get_width() * 0.5, bar.get_y() + bar.get_height()/2, 
-                f'{imp*100:.1f}%', 
-                ha='center', va='center', fontsize=9, color='white', fontweight='bold')
-    
-    plt.tight_layout()
-    return plot_to_base64(fig)
-
-
-def create_nulls_filled_chart(nulls_numeric, nulls_categorical):
+def crear_grafico_nulos_rellenados(nulls_numeric, nulls_categorical):
     """Crea gráfico de pastel mostrando nulos rellenados por tipo"""
     total_filled = nulls_numeric + nulls_categorical
     
@@ -330,7 +123,7 @@ def create_nulls_filled_chart(nulls_numeric, nulls_categorical):
     return plot_to_base64(fig)
 
 
-def create_outliers_comparison_chart(grliv_before, price_before, grliv_after, price_after, threshold):
+def crear_grafico_comparacion_outliers(grliv_before, price_before, grliv_after, price_after, threshold):
     """Crea gráfico comparando datos antes y después de eliminar outliers"""
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
     
@@ -354,7 +147,7 @@ def create_outliers_comparison_chart(grliv_before, price_before, grliv_after, pr
     return plot_to_base64(fig)
 
 
-def create_log_transformation_chart(price_original, price_log):
+def crear_grafico_transformacion_log(price_original, price_log):
     """Crea gráfico comparando distribución original vs logarítmica"""
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
     
@@ -380,7 +173,7 @@ def create_log_transformation_chart(price_original, price_log):
     return plot_to_base64(fig)
 
 
-def create_correlation_bar_chart(correlation_series):
+def crear_grafico_barras_correlacion(correlation_series):
     """Crea gráfico de barras horizontales de correlaciones - EXACTO como notebook"""
     if correlation_series is None or len(correlation_series) == 0:
         return None
@@ -399,7 +192,7 @@ def create_correlation_bar_chart(correlation_series):
     return plot_to_base64(fig)
 
 
-def create_top_nulls_chart(df):
+def crear_grafico_top_nulos(df):
     """Crea gráfico de Top 15 nulos - EXACTO como notebook"""
     na_count = df.isna().sum().sort_values(ascending=False)
     na_count_top = na_count.head(15)
@@ -416,38 +209,7 @@ def create_top_nulls_chart(df):
     return plot_to_base64(fig)
 
 
-def create_stats_boxplot(df):
-    """Crea boxplots de las variables numéricas más importantes"""
-    # Seleccionar variables numéricas principales
-    important_vars = ['SalePrice', 'GrLivArea', 'TotalBsmtSF', 'OverallQual', 'GarageCars', 'FullBath', 'YearBuilt']
-    available_vars = [v for v in important_vars if v in df.columns]
-    
-    if not available_vars:
-        return None
-    
-    # Crear subplots
-    n_vars = len(available_vars)
-    n_cols = 3
-    n_rows = (n_vars + n_cols - 1) // n_cols
-    
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, n_rows * 4))
-    axes = axes.flatten() if n_vars > 1 else [axes]
-    
-    for i, var in enumerate(available_vars):
-        sns.boxplot(y=df[var], ax=axes[i], color='#60a5fa')
-        axes[i].set_title(f'{var}', fontsize=12, fontweight='bold')
-        axes[i].set_ylabel('Valor', fontsize=10)
-        axes[i].grid(axis='y', alpha=0.3)
-    
-    # Ocultar ejes sobrantes
-    for i in range(n_vars, len(axes)):
-        axes[i].axis('off')
-    
-    plt.tight_layout()
-    return plot_to_base64(fig)
-
-
-def create_saleprice_boxplot(df):
+def crear_boxplot_saleprice(df):
     """Crea boxplot de SalePrice"""
     if 'SalePrice' not in df.columns:
         return None
@@ -462,7 +224,7 @@ def create_saleprice_boxplot(df):
     return plot_to_base64(fig)
 
 
-def create_saleprice_quartiles_chart(df):
+def crear_grafico_cuartiles_saleprice(df):
     """Crea gráfico de distribución por cuartiles de SalePrice"""
     if 'SalePrice' not in df.columns:
         return None
@@ -496,49 +258,3 @@ def create_saleprice_quartiles_chart(df):
     plt.tight_layout()
     return plot_to_base64(fig)
 
-
-def create_numeric_variables_overview(df):
-    """Crea un overview visual de todas las variables numéricas principales"""
-    numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    
-    # Filtrar columnas principales (excluir IDs y variables poco relevantes)
-    exclude_cols = ['Id', 'MSSubClass', 'MoSold', 'YrSold']
-    numeric_cols = [col for col in numeric_cols if col not in exclude_cols]
-    
-    if not numeric_cols:
-        return None
-    
-    # Tomar las 12 más importantes
-    important_cols = ['SalePrice', 'OverallQual', 'GrLivArea', 'GarageCars', 'GarageArea', 
-                     'TotalBsmtSF', '1stFlrSF', 'FullBath', 'YearBuilt', 'YearRemodAdd', 
-                     'TotRmsAbvGrd', '2ndFlrSF']
-    available_cols = [col for col in important_cols if col in df.columns]
-    
-    if not available_cols:
-        available_cols = numeric_cols[:12]
-    
-    n_cols = 4
-    n_rows = (len(available_cols) + n_cols - 1) // n_cols
-    
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(20, n_rows * 3))
-    axes = axes.flatten() if len(available_cols) > 1 else [axes]
-    
-    for i, col in enumerate(available_cols):
-        sns.histplot(df[col], bins=30, kde=True, ax=axes[i], color='#60a5fa', edgecolor='black')
-        axes[i].set_title(f'{col}', fontsize=11, fontweight='bold')
-        axes[i].set_xlabel('')
-        axes[i].set_ylabel('Frecuencia', fontsize=9)
-        axes[i].grid(alpha=0.3)
-        
-        # Agregar estadísticas básicas
-        mean_val = df[col].mean()
-        median_val = df[col].median()
-        axes[i].axvline(mean_val, color='red', linestyle='--', linewidth=1.5, alpha=0.7)
-        axes[i].axvline(median_val, color='orange', linestyle='--', linewidth=1.5, alpha=0.7)
-    
-    # Ocultar ejes sobrantes
-    for i in range(len(available_cols), len(axes)):
-        axes[i].axis('off')
-    
-    plt.tight_layout()
-    return plot_to_base64(fig)

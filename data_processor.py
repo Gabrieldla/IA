@@ -3,17 +3,14 @@ Módulo para procesar y limpiar datos de precios de casas
 """
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
 
 
 class HousePriceDataProcessor:
     """Procesa datos de casas para entrenamiento del modelo"""
     
     def __init__(self):
-        self.label_encoders = {}
-        self.steps_log = []
-        self.steps_output = []  # Nuevo: guardar outputs de cada paso
-        self.step_charts_data = {}  # Nuevo: datos para generar gráficos de cada paso
+        self.steps_output = []  # Guardar outputs de cada paso para mostrar en UI
+        self.step_charts_data = {}  # Datos para generar gráficos de cada paso
         self.initial_info = {}  # Info inicial del dataset
         
     def get_initial_info(self, df):
@@ -159,10 +156,6 @@ Dataset limpio: 0 valores nulos restantes ✓'''
         
         return df_listo
     
-    def encode_categorical(self, df):
-        """Codifica variables categóricas - NO NECESARIO, solo usamos numéricas"""
-        return df.copy()
-    
     def prepare_features(self, df_model):
         """Prepara las características para el modelo - Solo las más importantes"""
         # TOP 10 características más correlacionadas con el precio
@@ -180,28 +173,8 @@ Dataset limpio: 0 valores nulos restantes ✓'''
         ]
         
         caracteristicas_disponibles = [f for f in top_10_caracteristicas if f in df_model.columns]
-        self._log_step(f"Seleccionadas {len(caracteristicas_disponibles)} características TOP (máxima correlación con precio)")
         
         X = df_model[caracteristicas_disponibles]
         y = df_model["SalePrice_log"] if "SalePrice_log" in df_model.columns else None
         
         return X, y, caracteristicas_disponibles
-    
-    def _log_step(self, message):
-        """Registra un paso del procesamiento"""
-        self.steps_log.append(message)
-    
-    def get_steps_log(self):
-        """Retorna el log de pasos"""
-        return self.steps_log
-    
-    def get_data_stats(self, df_original, df_processed):
-        """Obtiene estadísticas de los datos"""
-        stats = {
-            'original_shape': df_original.shape,
-            'processed_shape': df_processed.shape,
-            'original_nulls': int(df_original.isna().sum().sum()),
-            'processed_nulls': int(df_processed.isna().sum().sum()),
-            'rows_removed': df_original.shape[0] - df_processed.shape[0]
-        }
-        return stats
