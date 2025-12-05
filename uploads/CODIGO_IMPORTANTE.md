@@ -168,18 +168,27 @@ metrics = {
 
 ### 2.4 Predicción Individual
 ```python
+
 def predict(self, features_dict):
     # Convertir dict a DataFrame
     import pandas as pd
     X_pred = pd.DataFrame([features_dict])
-    
+    # Convierte el diccionario recibido (features_dict) en un DataFrame de una sola fila,
+    # para que el modelo lo pueda procesar correctamente.
+
     # Predecir en escala logarítmica
     y_pred_log = self.model.predict(X_pred)
-    
+    # Genera la predicción del modelo, pero en escala logarítmica
+    # porque el modelo fue entrenado con SalePrice_log.
+
     # Convertir a escala original
     y_pred = np.expm1(y_pred_log)[0]
-    
+    # Convierte la predicción desde logaritmo a su valor real (precio en dólares).
+    # np.expm1(x) aplica exp(x) - 1 y se usa porque el entrenamiento usó log1p.
+
     return y_pred
+    # Devuelve el precio predicho en escala real.
+
 ```
 **Propósito**: Toma las características de una casa y predice su precio, revirtiendo la transformación logarítmica.
 
@@ -212,15 +221,27 @@ def get_feature_importance(self, feature_names):
 def create_predictions_vs_real_chart(y_test, y_pred):
     # Convertir a escala original
     y_test_orig = np.expm1(y_test)
+    # Convierte los valores reales desde escala logarítmica a su valor original
+
     y_pred_orig = np.expm1(y_pred)
-    
+    # Convierte las predicciones del modelo desde logaritmo a escala real
+
     # Scatter plot
     ax.scatter(y_test_orig, y_pred_orig, alpha=0.6, s=50, color='#60a5fa')
-    
+    # Dibuja un gráfico de dispersión comparando precios reales vs predichos
+    # Cada punto representa una casa: (precio_real, precio_predicho)
+
     # Línea de predicción perfecta (diagonal)
     valor_min = min(y_test_orig.min(), y_pred_orig.min())
+    # Obtiene el valor mínimo entre reales y predicciones (para la diagonal)
+
     valor_max = max(y_test_orig.max(), y_pred_orig.max())
+    # Obtiene el valor máximo entre reales y predicciones
+
     ax.plot([valor_min, valor_max], [valor_min, valor_max], 'r--', lw=2)
+    # Dibuja la línea diagonal roja punteada que representa "predicción perfecta"
+    # Si los puntos están cerca de esta línea, el modelo predice bien
+
 ```
 **Propósito**: Visualiza qué tan cerca están las predicciones de los valores reales. Puntos cerca de la línea roja = buenas predicciones.
 
@@ -231,15 +252,30 @@ def create_predictions_vs_real_chart(y_test, y_pred):
 def create_residuals_chart(y_pred, residuos):
     # Convertir a escala original
     y_pred_orig = np.expm1(y_pred)
+    # Convierte las predicciones desde logaritmo a escala real
+
     residuos_orig = np.expm1(residuos + np.log1p(y_pred_orig)) - y_pred_orig
-    
+    # Reconstruye los residuos en escala real:
+    # 1) residuos = y_test_log - y_pred_log
+    # 2) Se suman a log1p(predicción real)
+    # 3) Se aplica expm1 para volver a escala real
+    # 4) Se resta la predicción real para obtener el residuo real final
+
     # Gráfico 1: Scatter de residuos
     ejes[0].scatter(y_pred_orig, residuos_orig, alpha=0.6, s=50, color='#4ade80')
+    # Dibuja puntos mostrando la relación entre predicción y residuo
+    # Permite ver si el modelo tiene patrones de error (indicadores de sesgo)
+
     ejes[0].axhline(0, color='red', linestyle='--', linewidth=2)
-    
+    # Línea horizontal en 0 para identificar si los residuos se distribuyen alrededor del cero
+
     # Gráfico 2: Histograma de residuos
     ejes[1].hist(residuos_orig, bins=50, color='#60a5fa', alpha=0.7)
+    # Muestra la distribución de los residuos; idealmente debe parecerse a una distribución normal
+
     ejes[1].axvline(0, color='red', linestyle='--', linewidth=2)
+    # Línea vertical en 0 para observar simetría de los residuos alrededor del cero
+
 ```
 **Propósito**: Muestra los errores del modelo. Residuos distribuidos uniformemente alrededor de cero = buen modelo.
 
@@ -279,11 +315,20 @@ def create_outliers_comparison_chart(grliv_before, price_before, grliv_after, pr
 def create_log_transformation_chart(price_original, price_log):
     # Distribución ORIGINAL
     axes[0].hist(price_original, bins=50, color='#60a5fa', alpha=0.7)
+    # Grafica un histograma de los precios originales (sin transformar)
+    # Permite observar si la distribución está sesgada o tiene cola larga
+
     axes[0].axvline(price_original.mean(), color='red', linestyle='--', linewidth=2)
-    
+    # Dibuja una línea vertical indicando el valor promedio de los precios originales
+
     # Distribución LOGARÍTMICA
     axes[1].hist(price_log, bins=50, color='#4ade80', alpha=0.7)
+    # Grafica un histograma de los precios ya transformados a logaritmo
+    # Suele producir una distribución más simétrica y cercana a la normal
+
     axes[1].axvline(price_log.mean(), color='red', linestyle='--', linewidth=2)
+    # Dibuja la línea vertical del promedio de los precios transformados
+
 ```
 **Propósito**: Muestra cómo la transformación logarítmica convierte una distribución asimétrica en una distribución normal (gaussiana).
 

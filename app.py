@@ -11,6 +11,7 @@ from pathlib import Path
 from data_processor import HousePriceDataProcessor
 from model_trainer import ModelTrainer
 from plot_utils import *
+from auth import register_user, login_user, get_user_info
 
 # Configuración
 app, rt = fast_app(live=True, pico=False)
@@ -27,7 +28,8 @@ app_state = {
     'trainer': None,
     'model': None,
     'features': None,
-    'metrics': None
+    'metrics': None,
+    'logged_in_user': None  # Usuario actualmente logueado
 }
 
 # Estilos CSS
@@ -40,6 +42,35 @@ body {
     color: #e2e8f0; 
     line-height: 1.6;
     min-height: 100vh;
+}
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+}
+.auth-box {
+    background: rgba(23, 23, 23, 0.9);
+    border: 2px solid rgba(74, 222, 128, 0.3);
+    border-radius: 16px;
+    padding: 3rem;
+    max-width: 450px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+}
+.auth-title {
+    font-size: 2rem;
+    color: #4ade80;
+    text-align: center;
+    margin-bottom: 2rem;
+    font-weight: 700;
+}
+.auth-subtitle {
+    color: #9ca3af;
+    text-align: center;
+    margin-bottom: 2rem;
 }
 .container { 
     max-width: 100%;
@@ -101,21 +132,27 @@ label {
     margin-bottom: 0.5rem;
     font-size: 0.95rem;
 }
-input[type="file"], input[type="number"] {
+input[type="file"], input[type="number"], input[type="text"], input[type="password"], input[type="email"] {
     width: 100%;
-    padding: 1rem;
+    padding: 1rem 1.25rem;
     border: 2px solid rgba(74, 222, 128, 0.3);
-    background: rgba(15, 15, 15, 0.8);
+    background: rgba(15, 15, 15, 0.9);
     color: #e2e8f0;
-    border-radius: 8px;
+    border-radius: 10px;
     font-size: 1rem;
     transition: all 0.3s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+input::placeholder {
+    color: #6b7280;
+    font-size: 0.95rem;
 }
 input:focus {
     outline: none;
     border-color: #4ade80;
-    background: rgba(26, 26, 26, 0.9);
-    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
+    background: rgba(26, 26, 26, 0.95);
+    box-shadow: 0 0 0 4px rgba(74, 222, 128, 0.15), 0 4px 12px rgba(74, 222, 128, 0.2);
+    transform: translateY(-1px);
 }
 
 .btn {
@@ -398,7 +435,182 @@ input:focus {
 
 @rt("/")
 def get():
-    """Página principal"""
+    """Redirige al login si no está autenticado"""
+    if not app_state.get('logged_in_user'):
+        return RedirectResponse('/login', status_code=303)
+    return RedirectResponse('/dashboard', status_code=303)
+
+
+@rt("/login")
+def get():
+    """Página de login"""
+    error_msg = app_state.pop('error_message', None)
+    
+    return Html(
+        Head(
+            Title("Login - House Price Prediction"),
+            Meta(charset="UTF-8"),
+            Meta(name="viewport", content="width=device-width, initial-scale=1.0"),
+            Style(CSS)
+        ),
+        Body(
+            Div(
+                Div(
+                    H1("House Price Prediction", cls="auth-title"),
+                    P("Ingresa tus credenciales", cls="auth-subtitle"),
+                    
+                    Div(
+                        P(error_msg, style="color: #ef4444; text-align: center; margin-bottom: 1rem;"),
+                        cls="alert-info"
+                    ) if error_msg else None,
+                    
+                    Form(
+                        Div(
+                            Label("Usuario"),
+                            Input(type="text", name="username", required=True, placeholder="Ingresa tu usuario"),
+                            cls="form-group"
+                        ),
+                        Div(
+                            Label("Contraseña"),
+                            Input(type="password", name="password", required=True, placeholder="Ingresa tu contraseña"),
+                            cls="form-group"
+                        ),
+                        Button("Iniciar Sesión", type="submit", cls="btn btn-block"),
+                        action="/login",
+                        method="post"
+                    ),
+                    
+                    Div(
+                        P("¿No tienes cuenta? ", 
+                          A("Regístrate aquí", href="/register", style="color: #4ade80; text-decoration: none; font-weight: 600;"),
+                          style="text-align: center; margin-top: 1.5rem; color: #9ca3af;"
+                        )
+                    ),
+                    
+                    cls="auth-box"
+                ),
+                cls="auth-container"
+            )
+        )
+    )
+
+
+@rt("/login")
+async def post(request):
+    """Procesa el login"""
+    form_data = await request.form()
+    username = form_data.get('username')
+    password = form_data.get('password')
+    
+    success, message = login_user(username, password)
+    
+    if success:
+        app_state['logged_in_user'] = username
+        return RedirectResponse('/dashboard', status_code=303)
+    else:
+        app_state['error_message'] = message
+        return RedirectResponse('/login', status_code=303)
+
+
+@rt("/register")
+def get():
+    """Página de registro"""
+    error_msg = app_state.pop('error_message', None)
+    success_msg = app_state.pop('success_message', None)
+    
+    return Html(
+        Head(
+            Title("Registro - House Price Prediction"),
+            Meta(charset="UTF-8"),
+            Meta(name="viewport", content="width=device-width, initial-scale=1.0"),
+            Style(CSS)
+        ),
+        Body(
+            Div(
+                Div(
+                    H1("Crear Cuenta", cls="auth-title"),
+                    P("Regístrate para usar el sistema", cls="auth-subtitle"),
+                    
+                    Div(
+                        P(error_msg, style="color: #ef4444; text-align: center; margin-bottom: 1rem;")
+                    ) if error_msg else None,
+                    
+                    Div(
+                        P(success_msg, style="color: #4ade80; text-align: center; margin-bottom: 1rem;")
+                    ) if success_msg else None,
+                    
+                    Form(
+                        Div(
+                            Label("Nombre Completo"),
+                            Input(type="text", name="name", required=True, placeholder="Ej: Juan Pérez"),
+                            cls="form-group"
+                        ),
+                        Div(
+                            Label("Correo Electrónico"),
+                            Input(type="email", name="email", required=True, placeholder="tu@email.com"),
+                            cls="form-group"
+                        ),
+                        Div(
+                            Label("Usuario"),
+                            Input(type="text", name="username", required=True, placeholder="Mínimo 3 caracteres"),
+                            cls="form-group"
+                        ),
+                        Div(
+                            Label("Contraseña"),
+                            Input(type="password", name="password", required=True, placeholder="Mínimo 4 caracteres"),
+                            cls="form-group"
+                        ),
+                        Button("Registrarse", type="submit", cls="btn btn-block"),
+                        action="/register",
+                        method="post"
+                    ),
+                    
+                    Div(
+                        P("¿Ya tienes cuenta? ", 
+                          A("Inicia sesión aquí", href="/login", style="color: #4ade80; text-decoration: none; font-weight: 600;"),
+                          style="text-align: center; margin-top: 1.5rem; color: #9ca3af;"
+                        )
+                    ),
+                    
+                    cls="auth-box"
+                ),
+                cls="auth-container"
+            )
+        )
+    )
+
+
+@rt("/register")
+async def post(request):
+    """Procesa el registro"""
+    form_data = await request.form()
+    name = form_data.get('name')
+    email = form_data.get('email')
+    username = form_data.get('username')
+    password = form_data.get('password')
+    
+    success, message = register_user(username, password, name, email)
+    
+    if success:
+        app_state['success_message'] = message + ". Ahora puedes iniciar sesión"
+        return RedirectResponse('/login', status_code=303)
+    else:
+        app_state['error_message'] = message
+        return RedirectResponse('/register', status_code=303)
+
+
+@rt("/logout")
+def get():
+    """Cerrar sesión"""
+    app_state['logged_in_user'] = None
+    return RedirectResponse('/login', status_code=303)
+
+
+@rt("/dashboard")
+def get():
+    """Página principal - solo accesible si está logueado"""
+    if not app_state.get('logged_in_user'):
+        return RedirectResponse('/login', status_code=303)
     
     # Verificar si hay datos cargados
     has_data = app_state.get('processor') is not None
@@ -433,6 +645,7 @@ def get():
                         Button("Entrenamiento", onclick="showTab('training')", id="btn-training", cls="nav-link", type="button"),
                         Button("Evaluación", onclick="showTab('evaluation')", id="btn-evaluation", cls="nav-link", type="button"),
                         Button("Predicción", onclick="showTab('prediction')", id="btn-prediction", cls="nav-link", type="button"),
+                        A("Cerrar Sesión", href="/logout", cls="nav-link", style="margin-left: auto; background: rgba(239, 68, 68, 0.2); border-color: #ef4444;"),
                         cls="nav-links"
                     ),
                     cls="navbar"
