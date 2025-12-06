@@ -15,8 +15,6 @@ class HousePriceDataProcessor:
         
     def obtener_info_inicial(self, df):
         """Obtiene información inicial del dataset - EXACTO como notebook"""
-        import pandas as pd
-        
         # Cantidad de nulos y sus tipos
         conteo_nulos = df.isna().sum().sort_values(ascending=False)
         conteo_nulos = conteo_nulos[conteo_nulos > 0]
@@ -26,17 +24,11 @@ class HousePriceDataProcessor:
             'Tipo': df[conteo_nulos.index].dtypes
         })
         
-        # Top 15 nulos con porcentaje
-        conteo_nulos_completo = df.isna().sum().sort_values(ascending=False)
-        porcentaje_nulos = (df.isna().mean()*100).sort_values(ascending=False)
-        top15_nulos = pd.DataFrame({"nulos": conteo_nulos_completo, "%": porcentaje_nulos}).head(15)
-        
         self.initial_info = {
             'shape': df.shape,
             'columns': list(df.columns),
             'head': df.head(20),
             'na_df': df_nulos,
-            'top15_nulls': top15_nulos,
             'total_nulls': int(df.isna().sum().sum())
         }
         
@@ -45,8 +37,6 @@ class HousePriceDataProcessor:
     def procesar_datos(self, df):
         """Procesa el dataset completo - SOLO LO ESENCIAL"""
         df_listo = df.copy()
-        filas_iniciales = len(df_listo)
-        nulos_iniciales = df_listo.isnull().sum().sum()
         
         # Paso 1: Rellenar TODOS los nulos primero (antes de filtrar columnas)
         nulos_numericos = 0
