@@ -89,8 +89,8 @@ Dataset limpio: 0 valores nulos restantes ✓'''
                                   'YearRemodAdd', 'TotRmsAbvGrd']
         
         # Mantener solo las columnas necesarias
-        columnas_existentes = [col for col in top_10_caracteristicas if col in df_listo.columns]
-        df_listo = df_listo[columnas_existentes + ['SalePrice']]
+       
+        df_listo = df_listo[top_10_caracteristicas + ['SalePrice']]
         
         self.steps_output.append({
             'step': 3,
