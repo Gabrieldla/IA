@@ -16,16 +16,16 @@ class ModelTrainer:
         self.metrics = {}
         self.training_output = []  # Outputs detallados para mostrar en UI
         
-    def train_model(self, X, y):
+    def entrenar_modelo(self, X, y):
         """Entrena el modelo con optimización"""
-        X_train, X_test, y_train, y_test = train_test_split(
+        X_entrenamiento, X_prueba, y_entrenamiento, y_prueba = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
         
         self.training_output.append({
             'step': 'split',
             'name': 'División de datos',
-            'output': f'Train: {len(X_train)} muestras | Test: {len(X_test)} muestras (80/20 split)'
+            'output': f'Train: {len(X_entrenamiento)} muestras | Test: {len(X_prueba)} muestras (80/20 split)'
         })
         
         self.training_output.append({
@@ -33,15 +33,15 @@ class ModelTrainer:
             'name': 'Búsqueda de hiperparámetros',
             'output': 'RandomizedSearchCV iniciado con 20 combinaciones y 5-fold cross-validation'
         })
-        self.model = self._optimize_hyperparameters(X_train, y_train)
+        self.model = self._optimizar_hiperparametros(X_entrenamiento, y_entrenamiento)
         
         # Evaluar modelo
-        y_pred = self.model.predict(X_test)
-        self.metrics = self._evaluate_model(X_test, y_test)
+        y_prediccion = self.model.predict(X_prueba)
+        self.metrics = self._evaluar_modelo(X_prueba, y_prueba)
         
-        return self.model, self.metrics, X_test, y_test, y_pred
+        return self.model, self.metrics, X_prueba, y_prueba, y_prediccion
     
-    def _optimize_hyperparameters(self, X_train, y_train):
+    def _optimizar_hiperparametros(self, X_entrenamiento, y_entrenamiento):
         """Optimiza hiperparámetros usando RandomizedSearchCV"""
         dist_parametros = {
             'n_estimators': [500, 1000, 1500],
@@ -68,7 +68,7 @@ class ModelTrainer:
             verbose=1
         )
         
-        busqueda_aleatoria.fit(X_train, y_train)
+        busqueda_aleatoria.fit(X_entrenamiento, y_entrenamiento)
         
         modelo = busqueda_aleatoria.best_estimator_
         mejores_params = busqueda_aleatoria.best_params_
@@ -91,19 +91,19 @@ class ModelTrainer:
         
         return modelo
     
-    def _evaluate_model(self, X_test, y_test):
+    def _evaluar_modelo(self, X_prueba, y_prueba):
         """Evalúa el modelo y calcula métricas"""
         # Predecir
-        y_pred = self.model.predict(X_test)
+        y_prediccion = self.model.predict(X_prueba)
         
         # Convertir a escala original
-        y_test_orig = np.expm1(y_test)
-        y_pred_orig = np.expm1(y_pred)
+        y_prueba_original = np.expm1(y_prueba)
+        y_prediccion_original = np.expm1(y_prediccion)
         
-        metrics = {
-            'r2': r2_score(y_test_orig, y_pred_orig),
-            'rmse': np.sqrt(mean_squared_error(y_test_orig, y_pred_orig)),
-            'mae': mean_absolute_error(y_test_orig, y_pred_orig)
+        metricas = {
+            'r2': r2_score(y_prueba_original, y_prediccion_original),
+            'rmse': np.sqrt(mean_squared_error(y_prueba_original, y_prediccion_original)),
+            'mae': mean_absolute_error(y_prueba_original, y_prediccion_original)
         }
         
         # Guardar output de evaluación
@@ -111,21 +111,21 @@ class ModelTrainer:
             'step': 'evaluation',
             'name': 'Evaluación del modelo',
             'output': f'''Métricas en conjunto de prueba:
-  • R² Score: {metrics['r2']:.4f} ({metrics['r2']*100:.2f}% de varianza explicada)
-  • RMSE: ${metrics['rmse']:,.0f} (error cuadrático medio)
-  • MAE: ${metrics['mae']:,.0f} (error absoluto promedio)'''
+  • R² Score: {metricas['r2']:.4f} ({metricas['r2']*100:.2f}% de varianza explicada)
+  • RMSE: ${metricas['rmse']:,.0f} (error cuadrático medio)
+  • MAE: ${metricas['mae']:,.0f} (error absoluto promedio)'''
         })
         
-        return metrics
+        return metricas
     
-    def predict(self, features_dict):
+    def predecir(self, dict_caracteristicas):
         """Hace una predicción con el modelo"""
         if self.model is None:
             raise ValueError("Modelo no entrenado. Entrenar primero o cargar un modelo guardado.")
         
         # Convertir dict a DataFrame para predicción
         import pandas as pd
-        X_pred = pd.DataFrame([features_dict])
+        X_pred = pd.DataFrame([dict_caracteristicas])
         
         # Predecir (en escala log)
         y_pred_log = self.model.predict(X_pred)
@@ -135,17 +135,17 @@ class ModelTrainer:
         
         return y_pred
     
-    def get_feature_importance(self, feature_names):
+    def obtener_importancia_caracteristicas(self, nombres_caracteristicas):
         """Obtiene la importancia de las características"""
         if self.model is None:
             return []
         
-        importance = self.model.feature_importances_
-        feature_importance = [
-            {'feature': name, 'importance': float(imp)}
-            for name, imp in zip(feature_names, importance)
+        importancia = self.model.feature_importances_
+        importancia_caracteristicas = [
+            {'feature': nombre, 'importance': float(imp)}
+            for nombre, imp in zip(nombres_caracteristicas, importancia)
         ]
         # Ordenar por importancia
-        feature_importance.sort(key=lambda x: x['importance'], reverse=True)
+        importancia_caracteristicas.sort(key=lambda x: x['importance'], reverse=True)
         
-        return feature_importance
+        return importancia_caracteristicas

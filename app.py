@@ -977,12 +977,12 @@ def get():
                 ),
                 
                 # TODAS las tabs siempre presentes
-                generate_info_tab(app_state, has_data, active_tab),
-                generate_features_tab(app_state, has_data, active_tab),
-                generate_cleaning_tab(app_state, has_data, active_tab),
-                generate_training_tab(app_state, has_data, active_tab),
-                generate_evaluation_tab(app_state, has_model, active_tab),
-                generate_prediction_tab(app_state, has_model, active_tab),
+                generar_tab_info(app_state, has_data, active_tab),
+                generar_tab_caracteristicas(app_state, has_data, active_tab),
+                generar_tab_limpieza(app_state, has_data, active_tab),
+                generar_tab_entrenamiento(app_state, has_data, active_tab),
+                generar_tab_evaluacion(app_state, has_model, active_tab),
+                generar_tab_prediccion(app_state, has_model, active_tab),
                 
                 # Modal de loading
                 Div(
@@ -1038,12 +1038,12 @@ def get():
     )
 
 
-def generate_info_tab(state, has_data, active_tab='upload'):
+def generar_tab_info(estado, tiene_datos, tab_activa='upload'):
     """Genera tab de información del dataset"""
-    info = state.get('initial_info', {})
-    top15_chart = state.get('top15_chart', '')
+    info = estado.get('initial_info', {})
+    grafico_top15 = estado.get('top15_chart', '')
     
-    if not has_data or not info:
+    if not tiene_datos or not info:
         return Div(
             H2("Información del Dataset", cls="section-title"),
             Div(
@@ -1052,7 +1052,7 @@ def generate_info_tab(state, has_data, active_tab='upload'):
                 cls="alert-info"
             ),
             id="info",
-            cls=f"section tab-pane{' active' if active_tab == 'info' else ''}"
+            cls=f"section tab-pane{' active' if tab_activa == 'info' else ''}"
         )
     
     return Div(
@@ -1101,22 +1101,22 @@ def generate_info_tab(state, has_data, active_tab='upload'):
         Div(
             H3("Top 15 columnas con más nulos:", style="color: #4ade80; margin-bottom: 1rem;"),
             Div(
-                Img(src=top15_chart),
+                Img(src=grafico_top15),
                 cls="chart-box"
             ),
             cls="step-box"
         ),
         
         id="info",
-        cls=f"section tab-pane{' active' if active_tab == 'info' else ''}"
+        cls=f"section tab-pane{' active' if tab_activa == 'info' else ''}"
     )
 
 
-def generate_features_tab(state, has_data, active_tab='upload'):
+def generar_tab_caracteristicas(estado, tiene_datos, tab_activa='upload'):
     """Genera tab de características estadísticas (.describe())"""
-    df = state.get('df_original')
+    df = estado.get('df_original')
     
-    if not has_data or df is None:
+    if not tiene_datos or df is None:
         return Div(
             H2("Características Estadísticas", cls="section-title"),
             Div(
@@ -1125,7 +1125,7 @@ def generate_features_tab(state, has_data, active_tab='upload'):
                 cls="alert-info"
             ),
             id="features",
-            cls=f"section tab-pane{' active' if active_tab == 'features' else ''}"
+            cls=f"section tab-pane{' active' if tab_activa == 'features' else ''}"
         )
     
     # Obtener describe de columnas numéricas
@@ -1134,8 +1134,8 @@ def generate_features_tab(state, has_data, active_tab='upload'):
     # Generar gráficos estadísticos de SalePrice
     from plot_utils import crear_boxplot_saleprice, crear_grafico_cuartiles_saleprice
     
-    boxplot_chart = crear_boxplot_saleprice(df)
-    quartiles_chart = crear_grafico_cuartiles_saleprice(df)
+    grafico_boxplot = crear_boxplot_saleprice(df)
+    grafico_cuartiles = crear_grafico_cuartiles_saleprice(df)
     
     return Div(
         H2("Características Estadísticas", cls="section-title"),
@@ -1154,28 +1154,28 @@ def generate_features_tab(state, has_data, active_tab='upload'):
         # Boxplot de SalePrice
         Div(
             H3("Boxplot de SalePrice", style="color: #4ade80; margin-bottom: 1rem;"),
-            Img(src=boxplot_chart, style="width: 100%; max-width: 800px; margin: 1rem auto; display: block;") if boxplot_chart else P("No hay datos de SalePrice"),
+            Img(src=grafico_boxplot, style="width: 100%; max-width: 800px; margin: 1rem auto; display: block;") if grafico_boxplot else P("No hay datos de SalePrice"),
             cls="step-box"
-        ) if boxplot_chart else None,
+        ) if grafico_boxplot else None,
         
         # Distribución por Cuartiles
         Div(
             H3("Distribución por Cuartiles de SalePrice", style="color: #4ade80; margin-bottom: 1rem;"),
-            Img(src=quartiles_chart, style="width: 100%; max-width: 800px; margin: 1rem auto; display: block;") if quartiles_chart else P("No hay datos de SalePrice"),
+            Img(src=grafico_cuartiles, style="width: 100%; max-width: 800px; margin: 1rem auto; display: block;") if grafico_cuartiles else P("No hay datos de SalePrice"),
             cls="step-box"
-        ) if quartiles_chart else None,
+        ) if grafico_cuartiles else None,
         
         id="features",
-        cls=f"section tab-pane{' active' if active_tab == 'features' else ''}"
+        cls=f"section tab-pane{' active' if tab_activa == 'features' else ''}"
     )
 
 
-def generate_cleaning_tab(state, has_data, active_tab='upload'):
+def generar_tab_limpieza(estado, tiene_datos, tab_activa='upload'):
     """Genera tab de limpieza y análisis"""
-    processor = state.get('processor')
-    charts = state.get('charts', {})
+    procesador = estado.get('processor')
+    graficos = estado.get('charts', {})
     
-    if not has_data or not processor:
+    if not tiene_datos or not procesador:
         return Div(
             H2("Limpieza y Análisis", cls="section-title"),
             Div(
@@ -1184,11 +1184,11 @@ def generate_cleaning_tab(state, has_data, active_tab='upload'):
                 cls="alert-info"
             ),
             id="cleaning",
-            cls=f"section tab-pane{' active' if active_tab == 'cleaning' else ''}"
+            cls=f"section tab-pane{' active' if tab_activa == 'cleaning' else ''}"
         )
     
-    df = state.get('df_original')
-    df_processed = state.get('df_processed')
+    df = estado.get('df_original')
+    df_procesado = estado.get('df_processed')
     
     return Div(
         H2("Limpieza y Análisis", cls="section-title"),
@@ -1196,17 +1196,17 @@ def generate_cleaning_tab(state, has_data, active_tab='upload'):
         
         # Mostrar cada paso
         *[Div(
-            H3(f"PASO {step['step']}: {step['name']}", cls="step-title"),
+            H3(f"PASO {paso['step']}: {paso['name']}", cls="step-title"),
             Div(
-                Pre(step['output']),
+                Pre(paso['output']),
                 cls="step-output"
             ),
             Div(
-                Img(src=charts.get('steps', {}).get(f"step{step['step']}", "")),
+                Img(src=graficos.get('steps', {}).get(f"step{paso['step']}", "")),
                 cls="chart-box"
-            ) if f"step{step['step']}" in charts.get('steps', {}) else None,
+            ) if f"step{paso['step']}" in graficos.get('steps', {}) else None,
             cls="step-box"
-        ) for step in processor.steps_output],
+        ) for paso in procesador.steps_output],
         
         # Resumen
         Div(
@@ -1217,12 +1217,12 @@ def generate_cleaning_tab(state, has_data, active_tab='upload'):
                     cls="metric-card"
                 ),
                 Div(
-                    Div(f"{len(df) - len(df_processed):,}", cls="metric-value"),
+                    Div(f"{len(df) - len(df_procesado):,}", cls="metric-value"),
                     Div("Filas Eliminadas", cls="metric-label"),
                     cls="metric-card"
                 ),
                 Div(
-                    Div(f"{len(df_processed):,}", cls="metric-value"),
+                    Div(f"{len(df_procesado):,}", cls="metric-value"),
                     Div("Dataset Final", cls="metric-label"),
                     cls="metric-card"
                 ),
@@ -1236,9 +1236,9 @@ def generate_cleaning_tab(state, has_data, active_tab='upload'):
     )
 
 
-def generate_training_tab(state, has_data, active_tab='upload'):
+def generar_tab_entrenamiento(estado, tiene_datos, tab_activa='upload'):
     """Genera tab de entrenamiento"""
-    if not has_data:
+    if not tiene_datos:
         return Div(
             H2("Entrenar Modelo XGBoost", cls="section-title"),
             Div(
@@ -1247,7 +1247,7 @@ def generate_training_tab(state, has_data, active_tab='upload'):
                 cls="alert-info"
             ),
             id="training",
-            cls=f"section tab-pane{' active' if active_tab == 'training' else ''}"
+            cls=f"section tab-pane{' active' if tab_activa == 'training' else ''}"
         )
     
     return Div(
@@ -1257,8 +1257,8 @@ def generate_training_tab(state, has_data, active_tab='upload'):
         Div(
             P("Características seleccionadas para el modelo:"),
             Div(
-                *[Span(feat, style="display: inline-block; background: #1a1a1a; padding: 0.4rem 0.8rem; margin: 0.2rem; border-radius: 4px; font-size: 0.85rem; border: 1px solid #4ade80;") 
-                  for feat in ['OverallQual', 'GrLivArea', 'GarageCars', 'GarageArea', 'TotalBsmtSF', '1stFlrSF', 'FullBath', 'YearBuilt', 'YearRemodAdd', 'TotRmsAbvGrd']],
+                *[Span(caract, style="display: inline-block; background: #1a1a1a; padding: 0.4rem 0.8rem; margin: 0.2rem; border-radius: 4px; font-size: 0.85rem; border: 1px solid #4ade80;") 
+                  for caract in ['OverallQual', 'GrLivArea', 'GarageCars', 'GarageArea', 'TotalBsmtSF', '1stFlrSF', 'FullBath', 'YearBuilt', 'YearRemodAdd', 'TotRmsAbvGrd']],
                 style="margin-top: 0.5rem; margin-bottom: 1.5rem;"
             ),
             cls="step-box"
@@ -1270,20 +1270,20 @@ def generate_training_tab(state, has_data, active_tab='upload'):
             method="post"
         ),
         id="training",
-        cls=f"section tab-pane{' active' if active_tab == 'training' else ''}"
+        cls=f"section tab-pane{' active' if tab_activa == 'training' else ''}"
     )
 
 
 
-def generate_evaluation_tab(state, has_model, active_tab='upload'):
+def generar_tab_evaluacion(estado, tiene_modelo, tab_activa='upload'):
     """Genera tab de evaluación"""
-    trainer = state.get('trainer')
-    metrics = state.get('metrics')
-    importance_chart = state.get('importance_chart')
-    predictions_chart = state.get('predictions_chart')
-    residuals_chart = state.get('residuals_chart')
+    entrenador = estado.get('trainer')
+    metricas = estado.get('metrics')
+    grafico_importancia = estado.get('importance_chart')
+    grafico_predicciones = estado.get('predictions_chart')
+    grafico_residuos = estado.get('residuals_chart')
     
-    if not has_model or not trainer or not metrics:
+    if not tiene_modelo or not entrenador or not metricas:
         return Div(
             H2("Evaluación del Modelo", cls="section-title"),
             Div(
@@ -1292,7 +1292,7 @@ def generate_evaluation_tab(state, has_model, active_tab='upload'):
                 cls="alert-info"
             ),
             id="evaluation",
-            cls=f"section tab-pane{' active' if active_tab == 'evaluation' else ''}"
+            cls=f"section tab-pane{' active' if tab_activa == 'evaluation' else ''}"
         )
     
     return Div(
@@ -1300,29 +1300,29 @@ def generate_evaluation_tab(state, has_model, active_tab='upload'):
         
         # Outputs de entrenamiento
         *[Div(
-            H3(output['name'], cls="step-title"),
+            H3(salida['name'], cls="step-title"),
             Div(
-                Pre(output['output']),
+                Pre(salida['output']),
                 cls="step-output"
             ),
             cls="step-box"
-        ) for output in trainer.training_output],
+        ) for salida in entrenador.training_output],
         
         # Métricas
         Div(
             Div(
                 Div(
-                    Div(f"{metrics['r2']:.4f}", cls="metric-value"),
+                    Div(f"{metricas['r2']:.4f}", cls="metric-value"),
                     Div("R² Score", cls="metric-label"),
                     cls="metric-card"
                 ),
                 Div(
-                    Div(f"${metrics['rmse']:,.0f}", cls="metric-value"),
+                    Div(f"${metricas['rmse']:,.0f}", cls="metric-value"),
                     Div("RMSE", cls="metric-label"),
                     cls="metric-card"
                 ),
                 Div(
-                    Div(f"${metrics['mae']:,.0f}", cls="metric-value"),
+                    Div(f"${metricas['mae']:,.0f}", cls="metric-value"),
                     Div("MAE", cls="metric-label"),
                     cls="metric-card"
                 ),
@@ -1335,41 +1335,41 @@ def generate_evaluation_tab(state, has_model, active_tab='upload'):
         Div(
             H3("Predicciones vs Valores Reales", cls="step-title"),
             Div(
-                Img(src=predictions_chart),
+                Img(src=grafico_predicciones),
                 cls="chart-box"
             ),
             cls="step-box"
-        ) if predictions_chart else None,
+        ) if grafico_predicciones else None,
         
         # Gráfico: Residuos
         Div(
             H3("Análisis de Residuos", cls="step-title"),
             Div(
-                Img(src=residuals_chart),
+                Img(src=grafico_residuos),
                 cls="chart-box"
             ),
             cls="step-box"
-        ) if residuals_chart else None,
+        ) if grafico_residuos else None,
         
         # Importancia de características
         Div(
             H3("Importancia de Características", cls="step-title"),
             Div(
-                Img(src=importance_chart),
+                Img(src=grafico_importancia),
                 cls="chart-box"
             ),
             cls="step-box"
         ),
         
         id="evaluation",
-        cls=f"section tab-pane{' active' if active_tab == 'evaluation' else ''}"
+        cls=f"section tab-pane{' active' if tab_activa == 'evaluation' else ''}"
     )
 
 
-def generate_prediction_tab(state, has_model, active_tab='upload'):
+def generar_tab_prediccion(estado, tiene_modelo, tab_activa='upload'):
     """Genera tab de predicción"""
-    features = state.get('features')
-    last_prediction = state.get('last_prediction')
+    caracteristicas = estado.get('features')
+    ultima_prediccion = estado.get('last_prediction')
     
     # Traducción de campos al español
     traduccion = {
@@ -1385,7 +1385,7 @@ def generate_prediction_tab(state, has_model, active_tab='upload'):
         'TotRmsAbvGrd': 'Habitaciones Totales'
     }
     
-    if not has_model or not features:
+    if not tiene_modelo or not caracteristicas:
         return Div(
             H2("Hacer Predicción", cls="section-title"),
             Div(
@@ -1394,27 +1394,27 @@ def generate_prediction_tab(state, has_model, active_tab='upload'):
                 cls="alert-info"
             ),
             id="prediction",
-            cls=f"section tab-pane{' active' if active_tab == 'prediction' else ''}"
+            cls=f"section tab-pane{' active' if tab_activa == 'prediction' else ''}"
         )
     
-    content = [
+    contenido = [
         H2("Hacer Predicción", cls="section-title"),
         P("Ingresa las características de una casa para predecir su precio", cls="section-subtitle"),
     ]
     
     # Mostrar última predicción si existe
-    if last_prediction:
-        content.append(
+    if ultima_prediccion:
+        contenido.append(
             Div(
                 H3("Última Predicción:", cls="step-title", style="color: #4ade80;"),
                 Div(
                     H4("Características:", style="color: #4ade80; margin-bottom: 0.5rem;"),
-                    *[P(f"{k}: {v}", style="color: #e2e8f0;") for k, v in last_prediction['features'].items()],
+                    *[P(f"{k}: {v}", style="color: #e2e8f0;") for k, v in ultima_prediccion['features'].items()],
                     cls="step-box"
                 ),
                 Div(
                     Div(
-                        Div(f"${last_prediction['price']:,.0f}", cls="metric-value", style="font-size: 2.5rem;"),
+                        Div(f"${ultima_prediccion['price']:,.0f}", cls="metric-value", style="font-size: 2.5rem;"),
                         Div("Precio Predicho", cls="metric-label"),
                         cls="metric-card"
                     ),
@@ -1440,7 +1440,7 @@ def generate_prediction_tab(state, has_model, active_tab='upload'):
     }
     
     # Formulario de nueva predicción con validaciones
-    content.append(
+    contenido.append(
         Div(
             H3("Nueva Predicción:", cls="step-title", style="color: #4ade80;"),
             Div(
@@ -1451,19 +1451,19 @@ def generate_prediction_tab(state, has_model, active_tab='upload'):
             Form(
                 Div(
                     *[Div(
-                        Label(traduccion.get(feat, feat)),
+                        Label(traduccion.get(caract, caract)),
                         Input(
                             type="number", 
-                            name=feat, 
+                            name=caract, 
                             required=True, 
-                            step=str(valores_defaults[feat]['step']),
-                            min=str(valores_defaults[feat]['min']),
-                            max=str(valores_defaults[feat]['max']),
-                            value=str(valores_defaults[feat]['default']),
-                            placeholder=valores_defaults[feat]['placeholder']
+                            step=str(valores_defaults[caract]['step']),
+                            min=str(valores_defaults[caract]['min']),
+                            max=str(valores_defaults[caract]['max']),
+                            value=str(valores_defaults[caract]['default']),
+                            placeholder=valores_defaults[caract]['placeholder']
                         ),
                         cls="form-group"
-                    ) for feat in features if feat in valores_defaults],
+                    ) for caract in caracteristicas if caract in valores_defaults],
                     cls="form-grid"
                 ),
                 Button("Calcular Precio Predicho", type="submit", cls="btn btn-block"),
@@ -1475,9 +1475,9 @@ def generate_prediction_tab(state, has_model, active_tab='upload'):
     )
     
     return Div(
-        *content,
+        *contenido,
         id="prediction",
-        cls=f"section tab-pane{' active' if active_tab == 'prediction' else ''}"
+        cls=f"section tab-pane{' active' if tab_activa == 'prediction' else ''}"
     )
 
 
@@ -1493,10 +1493,10 @@ async def post(file: UploadFile):
         
         # Obtener información inicial
         processor = HousePriceDataProcessor()
-        initial_info = processor.get_initial_info(df)
+        initial_info = processor.obtener_info_inicial(df)
         
         # Procesar datos
-        df_processed = processor.process_data(df)
+        df_processed = processor.procesar_datos(df)
         
         app_state['df_processed'] = df_processed
         app_state['processor'] = processor
@@ -1571,11 +1571,11 @@ async def post():
         df_processed = app_state['df_processed']
         
         # Preparar features
-        X, y, features = processor.prepare_features(df_processed)
+        X, y, features = processor.preparar_caracteristicas(df_processed)
         
         # Entrenar modelo
         trainer = ModelTrainer()
-        model, metrics, X_test, y_test, y_pred = trainer.train_model(X, y)
+        model, metrics, X_test, y_test, y_pred = trainer.entrenar_modelo(X, y)
         
         # Guardar en estado
         app_state['trainer'] = trainer
@@ -1584,7 +1584,7 @@ async def post():
         app_state['metrics'] = metrics
         
         # Gráficos
-        feature_importance = trainer.get_feature_importance(features)
+        feature_importance = trainer.obtener_importancia_caracteristicas(features)
         importance_chart = crear_grafico_importancia_caracteristicas(feature_importance)
         predictions_chart = crear_grafico_predicciones_vs_reales(y_test, y_pred)
         residuos = y_test - y_pred
@@ -1621,7 +1621,7 @@ async def post(request):
         
         # Predecir
         trainer = app_state['trainer']
-        prediction = trainer.predict(features_dict)
+        prediction = trainer.predecir(features_dict)
         
         # Guardar en estado
         app_state['last_prediction'] = {

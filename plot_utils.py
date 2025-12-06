@@ -21,19 +21,19 @@ def plot_to_base64(fig):
     return f"data:image/png;base64,{img_base64}"
 
 
-def crear_grafico_importancia_caracteristicas(feature_importance):
+def crear_grafico_importancia_caracteristicas(importancia_caracteristicas):
     """Crea gráfico de importancia de características"""
-    if not feature_importance:
+    if not importancia_caracteristicas:
         return None
     
     # Tomar top 15
-    top_features = feature_importance[:15]
+    top_caracteristicas = importancia_caracteristicas[:15]
     
-    features = [f['feature'] for f in top_features]
-    importance = [f['importance'] for f in top_features]
+    caracteristicas = [f['feature'] for f in top_caracteristicas]
+    importancia = [f['importance'] for f in top_caracteristicas]
     
     fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(x=importance, y=features, ax=ax, palette='viridis')
+    sns.barplot(x=importancia, y=caracteristicas, ax=ax, palette='viridis')
     ax.set_title('Importancia de Características (Top 15)', fontsize=12, fontweight='bold')
     ax.set_xlabel('Importancia')
     ax.set_ylabel('Característica')
@@ -98,22 +98,22 @@ def crear_grafico_residuos(y_pred, residuos):
     return plot_to_base64(fig)
 
 
-def crear_grafico_nulos_rellenados(nulls_numeric, nulls_categorical):
+def crear_grafico_nulos_rellenados(nulos_numericos, nulos_categoricos):
     """Crea gráfico de pastel mostrando nulos rellenados por tipo"""
-    total_filled = nulls_numeric + nulls_categorical
+    total_rellenados = nulos_numericos + nulos_categoricos
     
-    if total_filled == 0:
+    if total_rellenados == 0:
         return None
     
     fig, ax = plt.subplots(figsize=(8, 6))
-    categories = ['Numéricos', 'Categóricos']
-    values = [nulls_numeric, nulls_categorical]
-    colors = ['#60a5fa', '#4ade80']
+    categorias = ['Numéricos', 'Categóricos']
+    valores = [nulos_numericos, nulos_categoricos]
+    colores = ['#60a5fa', '#4ade80']
     
-    wedges, texts, autotexts = ax.pie(values, labels=categories, autopct='%1.1f%%',
-                                        colors=colors, startangle=90,
+    wedges, texts, autotexts = ax.pie(valores, labels=categorias, autopct='%1.1f%%',
+                                        colors=colores, startangle=90,
                                         textprops={'fontsize': 12, 'fontweight': 'bold'})
-    ax.set_title(f'{total_filled:,} Nulos Rellenados por Tipo', fontsize=14, fontweight='bold')
+    ax.set_title(f'{total_rellenados:,} Nulos Rellenados por Tipo', fontsize=14, fontweight='bold')
     
     for autotext in autotexts:
         autotext.set_color('white')
@@ -123,69 +123,69 @@ def crear_grafico_nulos_rellenados(nulls_numeric, nulls_categorical):
     return plot_to_base64(fig)
 
 
-def crear_grafico_comparacion_outliers(grliv_before, price_before, grliv_after, price_after, threshold):
+def crear_grafico_comparacion_outliers(area_antes, precio_antes, area_despues, precio_despues, umbral):
     """Crea gráfico comparando datos antes y después de eliminar outliers"""
-    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+    fig, ejes = plt.subplots(1, 2, figsize=(16, 6))
     
     # ANTES
-    axes[0].scatter(grliv_before, price_before, alpha=0.6, s=30, color='#ef4444', edgecolors='black', linewidth=0.5)
-    axes[0].axvline(threshold, color='#4ade80', linestyle='--', linewidth=2, label=f'Límite: {threshold:.0f}')
-    axes[0].set_xlabel('GrLivArea (pies²)', fontsize=11, fontweight='bold')
-    axes[0].set_ylabel('SalePrice ($)', fontsize=11, fontweight='bold')
-    axes[0].set_title(f'ANTES: {len(grliv_before):,} casas (con outliers)', fontsize=13, fontweight='bold')
-    axes[0].grid(alpha=0.3)
-    axes[0].legend()
+    ejes[0].scatter(area_antes, precio_antes, alpha=0.6, s=30, color='#ef4444', edgecolors='black', linewidth=0.5)
+    ejes[0].axvline(umbral, color='#4ade80', linestyle='--', linewidth=2, label=f'Límite: {umbral:.0f}')
+    ejes[0].set_xlabel('GrLivArea (pies²)', fontsize=11, fontweight='bold')
+    ejes[0].set_ylabel('SalePrice ($)', fontsize=11, fontweight='bold')
+    ejes[0].set_title(f'ANTES: {len(area_antes):,} casas (con outliers)', fontsize=13, fontweight='bold')
+    ejes[0].grid(alpha=0.3)
+    ejes[0].legend()
     
     # DESPUÉS
-    axes[1].scatter(grliv_after, price_after, alpha=0.6, s=30, color='#4ade80', edgecolors='black', linewidth=0.5)
-    axes[1].set_xlabel('GrLivArea (pies²)', fontsize=11, fontweight='bold')
-    axes[1].set_ylabel('SalePrice ($)', fontsize=11, fontweight='bold')
-    axes[1].set_title(f'DESPUÉS: {len(grliv_after):,} casas (sin outliers)', fontsize=13, fontweight='bold')
-    axes[1].grid(alpha=0.3)
+    ejes[1].scatter(area_despues, precio_despues, alpha=0.6, s=30, color='#4ade80', edgecolors='black', linewidth=0.5)
+    ejes[1].set_xlabel('GrLivArea (pies²)', fontsize=11, fontweight='bold')
+    ejes[1].set_ylabel('SalePrice ($)', fontsize=11, fontweight='bold')
+    ejes[1].set_title(f'DESPUÉS: {len(area_despues):,} casas (sin outliers)', fontsize=13, fontweight='bold')
+    ejes[1].grid(alpha=0.3)
     
     plt.tight_layout()
     return plot_to_base64(fig)
 
 
-def crear_grafico_transformacion_log(price_original, price_log):
+def crear_grafico_transformacion_log(precio_original, precio_log):
     """Crea gráfico comparando distribución original vs logarítmica"""
-    fig, axes = plt.subplots(1, 2, figsize=(16, 6))
+    fig, ejes = plt.subplots(1, 2, figsize=(16, 6))
     
     # ORIGINAL
-    axes[0].hist(price_original, bins=50, color='#60a5fa', alpha=0.7, edgecolor='black')
-    axes[0].axvline(price_original.mean(), color='red', linestyle='--', linewidth=2, label=f'Media: ${price_original.mean():,.0f}')
-    axes[0].set_xlabel('SalePrice ($)', fontsize=11, fontweight='bold')
-    axes[0].set_ylabel('Frecuencia', fontsize=11, fontweight='bold')
-    axes[0].set_title('Distribución ORIGINAL (Asimétrica)', fontsize=13, fontweight='bold')
-    axes[0].legend()
-    axes[0].grid(alpha=0.3)
+    ejes[0].hist(precio_original, bins=50, color='#60a5fa', alpha=0.7, edgecolor='black')
+    ejes[0].axvline(precio_original.mean(), color='red', linestyle='--', linewidth=2, label=f'Media: ${precio_original.mean():,.0f}')
+    ejes[0].set_xlabel('SalePrice ($)', fontsize=11, fontweight='bold')
+    ejes[0].set_ylabel('Frecuencia', fontsize=11, fontweight='bold')
+    ejes[0].set_title('Distribución ORIGINAL (Asimétrica)', fontsize=13, fontweight='bold')
+    ejes[0].legend()
+    ejes[0].grid(alpha=0.3)
     
     # LOG
-    axes[1].hist(price_log, bins=50, color='#4ade80', alpha=0.7, edgecolor='black')
-    axes[1].axvline(price_log.mean(), color='red', linestyle='--', linewidth=2, label=f'Media: {price_log.mean():.2f}')
-    axes[1].set_xlabel('Log(SalePrice)', fontsize=11, fontweight='bold')
-    axes[1].set_ylabel('Frecuencia', fontsize=11, fontweight='bold')
-    axes[1].set_title('Distribución LOGARÍTMICA (Normalizada)', fontsize=13, fontweight='bold')
-    axes[1].legend()
-    axes[1].grid(alpha=0.3)
+    ejes[1].hist(precio_log, bins=50, color='#4ade80', alpha=0.7, edgecolor='black')
+    ejes[1].axvline(precio_log.mean(), color='red', linestyle='--', linewidth=2, label=f'Media: {precio_log.mean():.2f}')
+    ejes[1].set_xlabel('Log(SalePrice)', fontsize=11, fontweight='bold')
+    ejes[1].set_ylabel('Frecuencia', fontsize=11, fontweight='bold')
+    ejes[1].set_title('Distribución LOGARÍTMICA (Normalizada)', fontsize=13, fontweight='bold')
+    ejes[1].legend()
+    ejes[1].grid(alpha=0.3)
     
     plt.tight_layout()
     return plot_to_base64(fig)
 
 
-def crear_grafico_barras_correlacion(correlation_series):
+def crear_grafico_barras_correlacion(serie_correlacion):
     """Crea gráfico de barras horizontales de correlaciones - EXACTO como notebook"""
-    if correlation_series is None or len(correlation_series) == 0:
+    if serie_correlacion is None or len(serie_correlacion) == 0:
         return None
     
     fig, ax = plt.subplots(figsize=(10, 7))
-    colors_bar = ['#4ade80' if x > 0.5 else '#60a5fa' if x > 0 else 'red' for x in correlation_series.values]
-    ax.barh(correlation_series.index, correlation_series.values, color=colors_bar, alpha=0.8, edgecolor='black')
+    colores_barras = ['#4ade80' if x > 0.5 else '#60a5fa' if x > 0 else 'red' for x in serie_correlacion.values]
+    ax.barh(serie_correlacion.index, serie_correlacion.values, color=colores_barras, alpha=0.8, edgecolor='black')
     ax.set_xlabel('Correlación con SalePrice', fontsize=12, fontweight='bold')
-    ax.set_title('Top 15 Features por Correlación', fontsize=14, fontweight='bold')
+    ax.set_title('Top 15 Características por Correlación', fontsize=14, fontweight='bold')
     ax.grid(axis='x', alpha=0.3)
     
-    for i, (idx, val) in enumerate(correlation_series.items()):
+    for i, (idx, val) in enumerate(serie_correlacion.items()):
         ax.text(val + 0.01, i, f'{val:.3f}', va='center', fontweight='bold')
     
     plt.tight_layout()
@@ -231,29 +231,29 @@ def crear_grafico_cuartiles_saleprice(df):
     
     fig, ax = plt.subplots(figsize=(10, 6))
     
-    quartiles = ['Q1\n(0-25%)', 'Q2\n(25-50%)', 'Q3\n(50-75%)', 'Q4\n(75-100%)']
+    cuartiles = ['Q1\n(0-25%)', 'Q2\n(25-50%)', 'Q3\n(50-75%)', 'Q4\n(75-100%)']
     q1 = df['SalePrice'].quantile(0.25)
     q2 = df['SalePrice'].quantile(0.50)
     q3 = df['SalePrice'].quantile(0.75)
     
-    counts = [
+    conteos = [
         len(df[df['SalePrice'] <= q1]),
         len(df[(df['SalePrice'] > q1) & (df['SalePrice'] <= q2)]),
         len(df[(df['SalePrice'] > q2) & (df['SalePrice'] <= q3)]),
         len(df[df['SalePrice'] > q3])
     ]
     
-    colors_q = ['#ef4444', '#f59e0b', '#4ade80', '#60a5fa']
-    bars = ax.bar(quartiles, counts, color=colors_q, alpha=0.8, edgecolor='black', linewidth=1.5)
+    colores_cuartiles = ['#ef4444', '#f59e0b', '#4ade80', '#60a5fa']
+    barras = ax.bar(cuartiles, conteos, color=colores_cuartiles, alpha=0.8, edgecolor='black', linewidth=1.5)
     ax.set_title('Distribución por Cuartiles de SalePrice', fontsize=14, fontweight='bold')
     ax.set_ylabel('Cantidad de Casas', fontsize=12, fontweight='bold')
     ax.grid(axis='y', alpha=0.3)
     
     # Agregar valores encima de las barras
-    for bar, count in zip(bars, counts):
-        height = bar.get_height()
-        ax.text(bar.get_x() + bar.get_width()/2., height + 5,
-               f'{count}', ha='center', va='bottom', fontsize=11, fontweight='bold')
+    for barra, conteo in zip(barras, conteos):
+        altura = barra.get_height()
+        ax.text(barra.get_x() + barra.get_width()/2., altura + 5,
+               f'{conteo}', ha='center', va='bottom', fontsize=11, fontweight='bold')
     
     plt.tight_layout()
     return plot_to_base64(fig)

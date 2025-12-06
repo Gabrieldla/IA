@@ -13,36 +13,36 @@ class HousePriceDataProcessor:
         self.step_charts_data = {}  # Datos para generar gráficos de cada paso
         self.initial_info = {}  # Info inicial del dataset
         
-    def get_initial_info(self, df):
+    def obtener_info_inicial(self, df):
         """Obtiene información inicial del dataset - EXACTO como notebook"""
         import pandas as pd
         
         # Cantidad de nulos y sus tipos
-        na_count = df.isna().sum().sort_values(ascending=False)
-        na_count = na_count[na_count > 0]
+        conteo_nulos = df.isna().sum().sort_values(ascending=False)
+        conteo_nulos = conteo_nulos[conteo_nulos > 0]
         
-        na_df = pd.DataFrame({
-            'Nulos': na_count,
-            'Tipo': df[na_count.index].dtypes
+        df_nulos = pd.DataFrame({
+            'Nulos': conteo_nulos,
+            'Tipo': df[conteo_nulos.index].dtypes
         })
         
         # Top 15 nulos con porcentaje
-        na_count_full = df.isna().sum().sort_values(ascending=False)
-        na_pct = (df.isna().mean()*100).sort_values(ascending=False)
-        top15_nulls = pd.DataFrame({"nulos": na_count_full, "%": na_pct}).head(15)
+        conteo_nulos_completo = df.isna().sum().sort_values(ascending=False)
+        porcentaje_nulos = (df.isna().mean()*100).sort_values(ascending=False)
+        top15_nulos = pd.DataFrame({"nulos": conteo_nulos_completo, "%": porcentaje_nulos}).head(15)
         
         self.initial_info = {
             'shape': df.shape,
             'columns': list(df.columns),
             'head': df.head(20),
-            'na_df': na_df,
-            'top15_nulls': top15_nulls,
+            'na_df': df_nulos,
+            'top15_nulls': top15_nulos,
             'total_nulls': int(df.isna().sum().sum())
         }
         
         return self.initial_info
         
-    def process_data(self, df):
+    def procesar_datos(self, df):
         """Procesa el dataset completo - SOLO LO ESENCIAL"""
         df_listo = df.copy()
         filas_iniciales = len(df_listo)
@@ -86,6 +86,12 @@ Dataset limpio: 0 valores nulos restantes ✓'''
             correlaciones = df_numerico.corr()['SalePrice'].sort_values(ascending=False)
             # Guardar para gráfico
             self.step_charts_data['step2_correlation'] = correlaciones.drop('SalePrice').head(15)
+            
+            self.steps_output.append({
+                'step': 2,
+                'name': 'PASO 2: Análisis de correlaciones',
+                'output': f'Correlaciones calculadas para todas las variables numéricas\nTop 3 características con mayor correlación:\n  • {correlaciones.index[1]}: {correlaciones.iloc[1]:.3f}\n  • {correlaciones.index[2]}: {correlaciones.iloc[2]:.3f}\n  • {correlaciones.index[3]}: {correlaciones.iloc[3]:.3f}'
+            })
         
         # Ahora filtrar solo las columnas que vamos a usar
         top_10_caracteristicas = ['OverallQual', 'GrLivArea', 'GarageCars', 'GarageArea', 
@@ -97,8 +103,8 @@ Dataset limpio: 0 valores nulos restantes ✓'''
         df_listo = df_listo[columnas_existentes + ['SalePrice']]
         
         self.steps_output.append({
-            'step': 2,
-            'name': 'PASO 2: Selección de características',
+            'step': 3,
+            'name': 'PASO 3: Selección de características',
             'output': f'Dataset reducido de {len(df.columns)} a {len(df_listo.columns)} columnas (TOP 10 + SalePrice)\n\nCaracterísticas seleccionadas: {", ".join(top_10_caracteristicas)}'
         })
         
@@ -156,7 +162,7 @@ Dataset limpio: 0 valores nulos restantes ✓'''
         
         return df_listo
     
-    def prepare_features(self, df_model):
+    def preparar_caracteristicas(self, df_modelo):
         """Prepara las características para el modelo - Solo las más importantes"""
         # TOP 10 características más correlacionadas con el precio
         top_10_caracteristicas = [
@@ -172,9 +178,9 @@ Dataset limpio: 0 valores nulos restantes ✓'''
             'TotRmsAbvGrd',   # Total habitaciones (correlación ~0.53)
         ]
         
-        caracteristicas_disponibles = [f for f in top_10_caracteristicas if f in df_model.columns]
+        caracteristicas_disponibles = [c for c in top_10_caracteristicas if c in df_modelo.columns]
         
-        X = df_model[caracteristicas_disponibles]
-        y = df_model["SalePrice_log"] if "SalePrice_log" in df_model.columns else None
+        X = df_modelo[caracteristicas_disponibles]
+        y = df_modelo["SalePrice_log"] if "SalePrice_log" in df_modelo.columns else None
         
         return X, y, caracteristicas_disponibles
