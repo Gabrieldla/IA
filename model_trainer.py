@@ -18,14 +18,14 @@ class ModelTrainer:
         
     def entrenar_modelo(self, X, y):
         """Entrena el modelo con optimización"""
-        X_entrenamiento, X_prueba, y_entrenamiento, y_prueba = train_test_split(
+        X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.2, random_state=42
         )
         
         self.training_output.append({
             'step': 'split',
             'name': 'División de datos',
-            'output': f'Train: {len(X_entrenamiento)} muestras | Test: {len(X_prueba)} muestras (80/20 split)'
+            'output': f'Train: {len(X_train)} muestras | Test: {len(X_test)} muestras (80/20 split)'
         })
         
         self.training_output.append({
@@ -33,15 +33,15 @@ class ModelTrainer:
             'name': 'Búsqueda de hiperparámetros',
             'output': 'RandomizedSearchCV iniciado con 20 combinaciones y 5-fold cross-validation'
         })
-        self.model = self._optimizar_hiperparametros(X_entrenamiento, y_entrenamiento)
+        self.model = self._optimizar_hiperparametros(X_train, y_train)
         
         # Evaluar modelo
-        y_prediccion = self.model.predict(X_prueba)
-        self.metrics = self._evaluar_modelo(X_prueba, y_prueba)
+        y_pred = self.model.predict(X_test)
+        self.metrics = self._evaluar_modelo(X_test, y_test)
         
-        return self.model, self.metrics, X_prueba, y_prueba, y_prediccion
+        return self.model, self.metrics, X_test, y_test, y_pred
     
-    def _optimizar_hiperparametros(self, X_entrenamiento, y_entrenamiento):
+    def _optimizar_hiperparametros(self, X_train, y_train):
         """Optimiza hiperparámetros usando RandomizedSearchCV"""
         dist_parametros = {
             'n_estimators': [500, 1000, 1500],
@@ -68,7 +68,7 @@ class ModelTrainer:
             verbose=1
         )
         
-        busqueda_aleatoria.fit(X_entrenamiento, y_entrenamiento)
+        busqueda_aleatoria.fit(X_train, y_train)
         
         modelo = busqueda_aleatoria.best_estimator_
         mejores_params = busqueda_aleatoria.best_params_
@@ -91,19 +91,19 @@ class ModelTrainer:
         
         return modelo
     
-    def _evaluar_modelo(self, X_prueba, y_prueba):
+    def _evaluar_modelo(self, X_test, y_test):
         """Evalúa el modelo y calcula métricas"""
         # Predecir
-        y_prediccion = self.model.predict(X_prueba)
+        y_pred = self.model.predict(X_test)
         
         # Convertir a escala original
-        y_prueba_original = np.expm1(y_prueba)
-        y_prediccion_original = np.expm1(y_prediccion)
+        y_test_orig = np.expm1(y_test)
+        y_pred_orig = np.expm1(y_pred)
         
         metricas = {
-            'r2': r2_score(y_prueba_original, y_prediccion_original),
-            'rmse': np.sqrt(mean_squared_error(y_prueba_original, y_prediccion_original)),
-            'mae': mean_absolute_error(y_prueba_original, y_prediccion_original)
+            'r2': r2_score(y_test_orig, y_pred_orig),
+            'rmse': np.sqrt(mean_squared_error(y_test_orig, y_pred_orig)),
+            'mae': mean_absolute_error(y_test_orig, y_pred_orig)
         }
         
         # Guardar output de evaluación
